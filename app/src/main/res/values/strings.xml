@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">SocialMediaAppV2</string>
+    <string name="facebook_app_id">1023824074800146</string>
+    <string name="fb_login_protocol_scheme">fb1023824074800146</string>
+    <string name="facebook">Facebook</string>
+    <string name="google">Google</string>
+    <string name="logo">Logo</string>
+    <string name="image">image</string>
+    <string name="image_download_url">https://picsum.photos/200/300/?random</string>
+</resources>
