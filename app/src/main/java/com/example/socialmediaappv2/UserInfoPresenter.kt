@@ -26,7 +26,7 @@ class UserInfoPresenter(var view: Contract.MainView?): Contract.UserInfoPresente
         userDao = databaseInstance.userDAO
         imageDao = databaseInstance.imageDAO
         if (userDao.checkUser(id) == 0) {
-            userDao.addUser(UserInfoModel(id, displayName, "Private", ""))
+            userDao.addUser(UserInfoModel(id, displayName, "Private", "", ""))
         }
         currentUser = userDao.getUser(id)
     }

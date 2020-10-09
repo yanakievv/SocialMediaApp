@@ -17,5 +17,8 @@ data class UserInfoModel(
     val birthDate: String,
 
     @ColumnInfo(name = "bio")
-    val bio: String
+    val bio: String,
+
+    @ColumnInfo(name = "profile_pic")
+    val profilePic: String
 )
