@@ -7,26 +7,34 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import com.example.socialmediaappv2.contract.Contract
+import com.example.socialmediaappv2.home.HomeActivity
 import com.facebook.*
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
+import com.facebook.stetho.Stetho
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import kotlinx.android.synthetic.main.activity_login.*
+import kotlinx.coroutines.runBlocking
 
 private const val RC_SIGN_IN = 7
+internal lateinit var presenter: Contract.UserInfoPresenter
 
-class LoginActivity : AppCompatActivity() {
+class LoginActivity : AppCompatActivity(), Contract.MainView {
 
     private lateinit var callbackManager: CallbackManager
+    private var publisherId: String? = null
+    private var publisherDisplayName: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        FacebookSdk.sdkInitialize(applicationContext);
+        FacebookSdk.sdkInitialize(applicationContext)
         setContentView(R.layout.activity_login)
         callbackManager = CallbackManager.Factory.create()
-
+        Stetho.initializeWithDefaults(this)
+        setPresenter(UserInfoPresenter(this))
 
         val fbAccessToken: AccessToken? = AccessToken.getCurrentAccessToken()
         val googleToken: GoogleSignInAccount? = GoogleSignIn.getLastSignedInAccount(this)
@@ -111,7 +119,9 @@ class LoginActivity : AppCompatActivity() {
         }
 
         continueButton.setOnClickListener {
-            startActivity(Intent(this, HomeActivity::class.java))
+            runBlocking { presenter.init(publisherId!!, publisherDisplayName!!, applicationContext) }
+            val intent = Intent(this, HomeActivity::class.java)
+            startActivity(intent)
         }
     }
 
@@ -129,19 +139,26 @@ class LoginActivity : AppCompatActivity() {
     }
 
 
+    @SuppressLint("SetTextI18n")
     private fun updateUI(account: GoogleSignInAccount) { //Google
         FBMaskButton.visibility = View.INVISIBLE
         GLoginButton.text = "Logout"
         continueButton.visibility = View.VISIBLE
         greet.text = "Hello, " + account.givenName + ". Press the middle button below to continue."
+        publisherId = account.id
+        publisherDisplayName = account.displayName
     }
+    @SuppressLint("SetTextI18n")
     private fun updateUI(account: Profile) { // Facebook
         FBMaskButton.text = "Logout"
         GLoginButton.visibility = View.INVISIBLE
         continueButton.visibility = View.VISIBLE
         greet.text = "Hello, " + account.firstName + ". Press the middle button below to continue."
+        publisherId = account.id
+        publisherDisplayName = account.firstName + " " + account.lastName
 
     }
+    @SuppressLint("SetTextI18n")
     private fun updateUI() {
         GLoginButton.text = "Google"
         FBMaskButton.text = "Facebook"
@@ -149,6 +166,10 @@ class LoginActivity : AppCompatActivity() {
         FBMaskButton.visibility = View.VISIBLE
         GLoginButton.visibility = View.VISIBLE
         greet.text = "Log in to continue."
+    }
+
+    override fun setPresenter(_presenter: Contract.UserInfoPresenter) {
+        presenter = _presenter
     }
 }
 

@@ -5,23 +5,24 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [ImageModel::class], version = 1, exportSchema = false)
-abstract class ImageDatabase: RoomDatabase() {
+@Database(entities = [ImageModel::class, UserInfoModel::class], version = 4, exportSchema = false)
+abstract class UserDatabase: RoomDatabase() {
     abstract val imageDAO: ImageDAO
+    abstract val userDAO: UserDAO
 
     companion object {
         @Volatile
-        private var INSTANCE: ImageDatabase? = null
+        private var INSTANCE: UserDatabase? = null
 
-        fun getInstance(context: Context): ImageDatabase {
+        fun getInstance(context: Context): UserDatabase {
             synchronized(this) {
                 var instance = INSTANCE
 
                 if (instance == null) {
                     instance = Room.databaseBuilder(
                         context.applicationContext,
-                        ImageDatabase::class.java,
-                        "image_database"
+                        UserDatabase::class.java,
+                        "social_media_app_database"
                     )
                         .fallbackToDestructiveMigration()
                         .build()

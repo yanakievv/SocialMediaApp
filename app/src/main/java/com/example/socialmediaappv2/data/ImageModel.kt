@@ -6,15 +6,16 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "image_data")
 data class ImageModel(
-    @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "image_id")
-    val imageId: Int = 0,
 
-    @ColumnInfo(name = "image_list")
-    val image: String,
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "picture_id")
+    val picId: Int,
 
     @ColumnInfo(name = "publisher_id")
     val publisherId: String,
+
+    @ColumnInfo(name = "image")
+    val image: String,
 
     @ColumnInfo(name = "publisher_display_name")
     val publisherDisplayName: String,

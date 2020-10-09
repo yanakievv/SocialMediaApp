@@ -10,7 +10,6 @@ interface ImageDAO {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun addImage(image: ImageModel)
 
-
     @Query("SELECT * FROM image_data")
     suspend fun selectAll(): List<ImageModel>
 
