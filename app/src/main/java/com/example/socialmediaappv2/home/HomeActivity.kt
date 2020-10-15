@@ -7,7 +7,7 @@ import com.example.socialmediaappv2.R
 import com.example.socialmediaappv2.UserInfoPresenter
 import com.example.socialmediaappv2.contract.Contract
 import com.example.socialmediaappv2.profile.ProfileActivity
-import com.example.socialmediaappv2.upload.UploadActivity
+import com.example.socialmediaappv2.upload.Camera2Activity
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import kotlinx.android.synthetic.main.activity_home.*
 
@@ -23,7 +23,7 @@ class HomeActivity : AppCompatActivity(), Contract.MainView {
         setPresenter(UserInfoPresenter(this))
 
         upload_button.setOnClickListener {
-            startActivity(Intent(this, UploadActivity::class.java))
+            startActivity(Intent(this, Camera2Activity::class.java))
         }
         profile_button.setOnClickListener {
             startActivity(Intent(this, ProfileActivity::class.java))

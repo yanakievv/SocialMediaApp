@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.example.socialmediaappv2.contract.Contract
+import com.example.socialmediaappv2.data.UserDatabase
 import com.example.socialmediaappv2.home.HomeActivity
 import com.facebook.*
 import com.facebook.login.LoginManager

@@ -15,4 +15,7 @@ interface ImageDAO {
 
     @Query("SELECT * FROM image_data WHERE publisher_id = :publisherId")
     suspend fun getPublisherPosts(publisherId: String): List<ImageModel>
+
+    @Query("DELETE FROM image_data")
+    suspend fun nukeAll()
 }
