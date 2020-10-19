@@ -6,7 +6,7 @@ import com.example.socialmediaappv2.contract.Contract
 import com.example.socialmediaappv2.data.ImageModel
 import com.example.socialmediaappv2.data.UserDatabase
 import com.example.socialmediaappv2.data.UserInfoModel
-import com.example.socialmediaappv2.data.currentProfile
+import com.example.socialmediaappv2.data.App.currentProfile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

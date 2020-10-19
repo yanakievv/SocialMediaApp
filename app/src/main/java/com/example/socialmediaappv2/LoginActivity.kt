@@ -2,6 +2,7 @@ package com.example.socialmediaappv2
 
 //import com.facebook.stetho.Stetho
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -11,6 +12,7 @@ import com.example.socialmediaappv2.contract.Contract
 import com.example.socialmediaappv2.data.UserDatabase
 import com.example.socialmediaappv2.home.HomeActivity
 import com.facebook.*
+import com.facebook.FacebookSdk.getApplicationContext
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
 import com.facebook.stetho.Stetho
@@ -36,6 +38,9 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
         callbackManager = CallbackManager.Factory.create()
         Stetho.initializeWithDefaults(this)
         setPresenter(UserInfoPresenter(this))
+
+        //runBlocking{ UserDatabase.getInstance(applicationContext).imageDAO.nukeAll() }
+
 
         val fbAccessToken: AccessToken? = AccessToken.getCurrentAccessToken()
         val googleToken: GoogleSignInAccount? = GoogleSignIn.getLastSignedInAccount(this)

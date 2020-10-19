@@ -6,10 +6,10 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import com.example.socialmediaappv2.contract.Contract
 import com.example.socialmediaappv2.data.*
-import com.example.socialmediaappv2.data.currentProfile.currentUser
-import com.example.socialmediaappv2.data.currentProfile.databaseInstance
-import com.example.socialmediaappv2.data.currentProfile.imageDao
-import com.example.socialmediaappv2.data.currentProfile.userDao
+import com.example.socialmediaappv2.data.App.currentProfile.currentUser
+import com.example.socialmediaappv2.data.App.currentProfile.databaseInstance
+import com.example.socialmediaappv2.data.App.currentProfile.imageDao
+import com.example.socialmediaappv2.data.App.currentProfile.userDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -74,6 +74,8 @@ class UserInfoPresenter(var view: Contract.MainView?): Contract.UserInfoPresente
             )
         }
     }
+
+
 
     override fun getCurrentUser(): UserInfoModel {
         return currentUser
