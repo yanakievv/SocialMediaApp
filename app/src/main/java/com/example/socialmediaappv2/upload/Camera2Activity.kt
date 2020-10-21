@@ -276,20 +276,6 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
 
     private fun createCameraPreview() {
         try {
-            /*
-    E/AndroidRuntime: FATAL EXCEPTION: Camera Background
-    Process: com.example.socialmediaappv2, PID: 20041
-    java.lang.IllegalStateException: Session has been closed; further changes are illegal.
-        at android.hardware.camera2.impl.CameraCaptureSessionImpl.checkNotClosed(CameraCaptureSessionImpl.java:835)
-        at android.hardware.camera2.impl.CameraCaptureSessionImpl.capture(CameraCaptureSessionImpl.java:164)
-        at com.example.socialmediaappv2.upload.Camera2Activity$takePicture$1.onConfigured(Camera2Activity.kt:253)
-        at android.hardware.camera2.impl.CallbackProxies$SessionStateCallbackProxy.lambda$onConfigured$0$CallbackProxies$SessionStateCallbackProxy(CallbackProxies.java:53)
-        at android.hardware.camera2.impl.-$$Lambda$CallbackProxies$SessionStateCallbackProxy$soW0qC12Osypoky6AfL3P2-TeDw.run(Unknown Source:4)
-        at android.os.Handler.handleCallback(Handler.java:883)
-        at android.os.Handler.dispatchMessage(Handler.java:100)
-        at android.os.Looper.loop(Looper.java:214)
-        at android.os.HandlerThread.run(HandlerThread.java:67)
-        */
             setPresenter(UserInfoPresenter(this))
             val texture: SurfaceTexture = textureView.surfaceTexture!!
             texture.setDefaultBufferSize(imageDimension!!.width, imageDimension!!.height)
@@ -418,9 +404,5 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
 
     override fun setPresenter(_presenter: Contract.UserInfoPresenter) {
         presenter = _presenter
-    }
-
-    private fun disableButtons() {
-
     }
 }

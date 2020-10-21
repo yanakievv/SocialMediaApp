@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.socialmediaappv2.R
 import com.example.socialmediaappv2.data.ImageModel
+import com.example.socialmediaappv2.home.content.PictureContent
 
 
 class HomeRecyclerViewAdapter(
@@ -47,10 +48,15 @@ class HomeRecyclerViewAdapter(
                     popup.inflate(R.menu.home_menu)
                     popup.setOnMenuItemClickListener { item ->
                         when (item.itemId) {
-                            R.id.set_as_profile_picture ->
+                            R.id.set_as_profile_picture -> {
+                                PictureContent.setProfilePicture(values[adapterPosition].picId)
                                 true
-                            R.id.delete_post ->
+                            }
+                            R.id.delete_post -> {
+                                PictureContent.removePost(values[adapterPosition].picId, values[adapterPosition].image)
+                                notifyDataSetChanged()
                                 true
+                            }
                             else -> false
                         }
                     }

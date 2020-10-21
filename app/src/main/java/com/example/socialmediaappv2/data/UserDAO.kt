@@ -24,4 +24,7 @@ interface UserDAO {
 
     @Query("UPDATE user_data SET bio = :newBio WHERE id = :id")
     suspend fun setBio(id: String, newBio: String)
+
+    @Query("UPDATE user_data SET profile_pic_id = :newPic WHERE id = :id")
+    suspend fun setProfilePic(id: String, newPic: Int)
 }

@@ -1,21 +1,28 @@
 package com.example.socialmediaappv2
 
+import android.R.attr.path
 import android.content.Context
 import android.graphics.Bitmap
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import com.example.socialmediaappv2.contract.Contract
-import com.example.socialmediaappv2.data.*
 import com.example.socialmediaappv2.data.App.currentProfile.currentUser
 import com.example.socialmediaappv2.data.App.currentProfile.databaseInstance
 import com.example.socialmediaappv2.data.App.currentProfile.imageDao
 import com.example.socialmediaappv2.data.App.currentProfile.userDao
+import com.example.socialmediaappv2.data.ImageBitmapString
+import com.example.socialmediaappv2.data.ImageModel
+import com.example.socialmediaappv2.data.UserDatabase
+import com.example.socialmediaappv2.data.UserInfoModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+
 
 class UserInfoPresenter(var view: Contract.MainView?): Contract.UserInfoPresenter {
 
@@ -24,7 +31,7 @@ class UserInfoPresenter(var view: Contract.MainView?): Contract.UserInfoPresente
         userDao = databaseInstance.userDAO
         imageDao = databaseInstance.imageDAO
         if (userDao.checkUser(id) == 0) {
-            userDao.addUser(UserInfoModel(id, displayName, "Private", "", ""))
+            userDao.addUser(UserInfoModel(id, displayName, "Private", "", 0))
         }
         currentUser = userDao.getUser(id)
     }
@@ -79,6 +86,10 @@ class UserInfoPresenter(var view: Contract.MainView?): Contract.UserInfoPresente
 
     override fun getCurrentUser(): UserInfoModel {
         return currentUser
+    }
+
+    override fun setProfilePicture(picId: Int) {
+        runBlocking { userDao.setProfilePic(currentUser.publisherId, picId) }
     }
 
     override fun onDestroy() {

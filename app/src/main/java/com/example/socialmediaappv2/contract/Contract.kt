@@ -2,12 +2,13 @@ package com.example.socialmediaappv2.contract
 
 import android.content.Context
 import android.graphics.Bitmap
+import com.example.socialmediaappv2.data.App
 import com.example.socialmediaappv2.data.ImageModel
 import com.example.socialmediaappv2.data.UserInfoModel
 
 interface Contract {
     interface ProfileView: BaseView<ProfileInfoPresenter> {
-        fun inflate()
+        fun update()
     }
     interface MainView: BaseView<UserInfoPresenter> {
 
@@ -24,12 +25,18 @@ interface Contract {
 
         fun getCurrentUser(): UserInfoModel
 
+        fun setProfilePicture(picId: Int)
+
+
     }
     interface ProfileInfoPresenter: BasePresenter {
 
-        suspend fun init(id: String, displayName: String, context: Context)
+        suspend fun init(userId: String, context: Context)
         fun reInit(id: String)
         fun refreshDb()
+
+        fun getDisplayName(): String
+        fun setDisplayName(name: String)
 
         fun getBirthDate(): String
         fun setBirthDate(birthDate: String)
@@ -37,6 +44,7 @@ interface Contract {
         fun getBio(): String
         fun setBio(bio: String)
 
-        fun getPicture(): String
+        fun getPictures(): List<ImageModel>?
+        fun getProfilePic(): ImageModel?
     }
 }

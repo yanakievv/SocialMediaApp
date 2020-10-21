@@ -14,11 +14,11 @@ data class UserInfoModel(
     var displayName: String,
 
     @ColumnInfo(name = "birth_date")
-    val birthDate: String,
+    var birthDate: String,
 
     @ColumnInfo(name = "bio")
-    val bio: String,
+    var bio: String,
 
-    @ColumnInfo(name = "profile_pic")
-    val profilePic: String
+    @ColumnInfo(name = "profile_pic_id")
+    var profilePic: Int
 )

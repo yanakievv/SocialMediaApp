@@ -13,11 +13,17 @@ interface ImageDAO {
     @Query("SELECT * FROM image_data")
     suspend fun selectAll(): List<ImageModel>
 
+    @Query("SELECT * FROM image_data WHERE picture_id = :picId")
+    suspend fun getProfilePicture(picId: Int): ImageModel
+
     @Query("SELECT * FROM image_data WHERE publisher_id = :publisherId")
     suspend fun getPublisherPosts(publisherId: String): List<ImageModel>
 
     @Query("SELECT * FROM image_data WHERE publisher_id = :publisherId ORDER BY picture_id DESC LIMIT :count")
     suspend fun getLastPosts(publisherId: String, count: Int): List<ImageModel>
+
+    @Query("DELETE FROM image_data WHERE picture_id = :picId AND publisher_id = :publisherId")
+    suspend fun removePost(publisherId: String, picId: Int)
 
     @Query("DELETE FROM image_data")
     suspend fun nukeAll()
