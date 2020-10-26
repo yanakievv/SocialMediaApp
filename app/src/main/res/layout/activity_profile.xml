@@ -100,61 +100,63 @@
         android:id="@+id/displayName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Test Testovic"
-        android:textSize="18sp"
+        android:textColor="#FFFFFF"
+        android:textSize="24sp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/logo2" />
+        app:layout_constraintTop_toBottomOf="@+id/logo2"
+        tools:text="Test Testovic" />
 
     <TextView
         android:id="@+id/birthDate"
         android:layout_width="154dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="50dp"
-        android:layout_marginTop="50dp"
         android:layout_marginEnd="50dp"
-        android:text="Born: DD-MM-YYYY"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/profilePicture"
-        app:layout_constraintTop_toBottomOf="@+id/logo2" />
+        app:layout_constraintTop_toTopOf="@+id/profilePicture"
+        tools:text="Born: DD-MM-YYYY" />
 
     <TextView
         android:id="@+id/posts"
         android:layout_width="154dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="50dp"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="25dp"
         android:layout_marginEnd="50dp"
-        android:text="Posts: N"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/profilePicture"
-        app:layout_constraintTop_toBottomOf="@+id/logo2" />
+        app:layout_constraintTop_toBottomOf="@+id/birthDate"
+        tools:text="Posts: N" />
 
     <TextView
         android:id="@+id/bio"
         android:layout_width="154dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="50dp"
-        android:layout_marginTop="150dp"
+        android:layout_marginTop="25dp"
         android:layout_marginEnd="50dp"
         android:text="@string/bio"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.461"
         app:layout_constraintStart_toEndOf="@+id/profilePicture"
-        app:layout_constraintTop_toBottomOf="@+id/logo2" />
+        app:layout_constraintTop_toBottomOf="@+id/posts"
+        tools:text="Bio:" />
 
     <ImageView
         android:id="@+id/profilePicture"
         android:layout_width="128dp"
         android:layout_height="128dp"
         android:layout_marginStart="50dp"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="0dp"
         android:layout_marginEnd="250dp"
         android:layout_marginBottom="350dp"
-        android:adjustViewBounds="true"
+        android:adjustViewBounds="false"
         android:contentDescription="@string/profile"
         android:scaleType="fitCenter"
         app:layout_constraintBottom_toTopOf="@+id/bottom_app_bar"
@@ -170,10 +172,10 @@
         android:layout_width="337dp"
         android:layout_height="120dp"
         android:layout_marginTop="50dp"
-        android:text="@string/loremipsum"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/profilePicture" />
+        app:layout_constraintTop_toBottomOf="@+id/profilePicture"
+        tools:text="@string/loremipsum" />
 
     <ImageView
         android:id="@+id/settings"
@@ -184,6 +186,23 @@
         app:layout_constraintBottom_toTopOf="@+id/bottom_app_bar"
         app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@drawable/ic_baseline_settings_96" />
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fragment_container"
+        android:layout_width="350dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginEnd="15dp"
+        android:layout_marginBottom="20dp"
+        android:elevation="10dp"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_app_bar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.483"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout="@layout/fragment_edit_profile" />
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

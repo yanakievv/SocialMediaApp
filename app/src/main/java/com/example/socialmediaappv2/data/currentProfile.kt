@@ -10,6 +10,7 @@ class App: Application() {
         lateinit var imageDao: ImageDAO
 
         var imagesTaken: Int = 0
+
     }
 
 }

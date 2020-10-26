@@ -46,5 +46,8 @@ interface Contract {
 
         fun getPictures(): List<ImageModel>?
         fun getProfilePic(): ImageModel?
+
+        fun getNumberOfPosts(): Int
+        fun isCurrentProfile(): Boolean
     }
 }

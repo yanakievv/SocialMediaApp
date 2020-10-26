@@ -23,7 +23,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".upload.Camera2Activity" />
-        <activity android:name=".profile.ProfileActivity" />
+        <activity android:name=".profile.ProfileActivity"
+            android:windowSoftInputMode="adjustPan" />
         <activity
             android:name=".home.HomeActivity"
             android:label="@string/title_activity_home"

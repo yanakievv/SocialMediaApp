@@ -29,7 +29,7 @@ class ProfileInfoPresenter(var view: Contract.ProfileView?): Contract.ProfileInf
 
     override fun reInit(id: String) {
         if (isCurrentUser) {
-            CoroutineScope(Dispatchers.IO).launch {
+            runBlocking {
                 currentProfile.currentUser = userDao.getUser(id)
                 userInfo = currentProfile.currentUser
             }
@@ -38,7 +38,7 @@ class ProfileInfoPresenter(var view: Contract.ProfileView?): Contract.ProfileInf
 
     override fun refreshDb() {
         if (isCurrentUser) {
-            CoroutineScope(Dispatchers.IO).launch { userDao.updateUser(userInfo) }
+            runBlocking{ userDao.updateUser(userInfo) }
         }
     }
 
@@ -76,6 +76,16 @@ class ProfileInfoPresenter(var view: Contract.ProfileView?): Contract.ProfileInf
         var image: ImageModel? = null
         runBlocking { image = imageDao.getProfilePicture(userInfo.profilePic) }
         return image
+    }
+
+    override fun getNumberOfPosts(): Int {
+        var num: Int = 0
+        runBlocking { num = imageDao.getPublisherPosts(userInfo.publisherId).size}
+        return num
+    }
+
+    override fun isCurrentProfile(): Boolean {
+        return isCurrentUser
     }
 
     override fun onDestroy() {

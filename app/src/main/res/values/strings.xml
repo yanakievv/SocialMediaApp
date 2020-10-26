@@ -26,4 +26,8 @@
     <string name="delete">Delete</string>
     <string name="loremipsum">"  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dapibus faucibus lobortis. Curabitur vel lorem arcu. Pellentesque ultrices odio in risus rutrum, aliquet bibendum ipsum dictum. Nullam tristique, ligula accumsan laoreet convallis, lectus ante molestie sem, ut gravida justo quam eget est. Integer ac tincidunt odio, ut faucibus lacus. Cras viverra, tellus vitae sollicitudin commodo, lectus augue aliquet erat, quis pellentesque augue nisl nec lectus. Pellentesque sit amet consequat nunc. "</string>
     <string name="bio">Bio:</string>
+    <string name="logout">Log out</string>
+    <string name="edit_profile">Edit profile</string>
+    <string name="profile_pic_info">*You can set your profile picture from the Home menu.</string>
+    <string name="privateQuestionMark">Private</string>
 </resources>
