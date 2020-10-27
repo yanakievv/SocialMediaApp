@@ -31,6 +31,8 @@ import com.example.socialmediaappv2.R
 import com.example.socialmediaappv2.UserInfoPresenter
 import com.example.socialmediaappv2.contract.Contract
 import com.example.socialmediaappv2.data.App.currentProfile
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import kotlinx.android.synthetic.main.activity_camera2.*
 import kotlinx.coroutines.runBlocking
 import java.io.File
@@ -43,12 +45,12 @@ import kotlin.collections.ArrayList
 
 
 private const val REQUEST_CAMERA_PERMISSION = 200
+private const val GET_LAT_LONG = "GETLATLONG"
 internal lateinit var presenter: Contract.UserInfoPresenter
+private lateinit var fusedLocationClient: FusedLocationProviderClient
 
 
 class Camera2Activity : AppCompatActivity(), Contract.MainView {
-
-    private var paths: MutableList<String> = mutableListOf()
 
     private val tag = "AndroidCameraApi"
     private val orientations = SparseIntArray()
@@ -62,6 +64,8 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
     private var imageReader: ImageReader? = null
     private val file: File? = null
 
+    private var lat: Double = 0.0
+    private var long: Double = 0.0
 
     private var mBackgroundHandler: Handler? = null
     private var mBackgroundThread: HandlerThread? = null
@@ -104,21 +108,23 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
         orientations.append(Surface.ROTATION_270, 270)
 
         setPresenter(UserInfoPresenter(this))
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         runBlocking { presenter.init(
             currentProfile.currentUser.publisherId,
             "",
             this@Camera2Activity
-        )}
+        )
+            getLatLong()
+        }
+
         textureView.surfaceTextureListener = textureListener
 
-        Toast.makeText(this, currentProfile.currentUser.displayName, Toast.LENGTH_SHORT).show()
+        disableButtons()
 
         takePictureButton.setOnClickListener { takePicture() }
         backButton.setOnClickListener { closeCamera() }
 
     }
-
-
 
 
 
@@ -142,6 +148,7 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
             Log.e(tag, "onOpened")
             cameraDevice = camera
             createCameraPreview()
+            enableButtons()
         }
 
         override fun onDisconnected(camera: CameraDevice) {
@@ -171,9 +178,10 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
         }
     }
 
-    @SuppressLint("InlinedApi")
+    @SuppressLint("MissingPermission")
     @RequiresApi(Build.VERSION_CODES.M)
     private fun takePicture() {
+        disableButtons()
         if (null == cameraDevice) {
             Log.e(tag, "cameraDevice null")
             return
@@ -235,8 +243,8 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
 
                     val cr: ContentResolver = applicationContext.contentResolver
                     cr.insert(Media.EXTERNAL_CONTENT_URI, values)
-                    presenter.addPost(mFile.absolutePath)
                     mBackgroundHandler!!.post(ImageSaver(it.acquireNextImage(), mFile))
+                    presenter.addPost(mFile.absolutePath, doubleArrayOf(lat, long))
                 }
             reader.setOnImageAvailableListener(readerListener, mBackgroundHandler)
             val captureListener: CaptureCallback = object : CaptureCallback() {
@@ -246,7 +254,6 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
                     result: TotalCaptureResult
                 ) {
                     super.onCaptureCompleted(session, request, result)
-
                     createCameraPreview()
                 }
             }
@@ -272,6 +279,7 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
         } catch (e: CameraAccessException) {
             e.printStackTrace()
         }
+        enableButtons()
     }
 
     private fun createCameraPreview() {
@@ -404,5 +412,36 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
 
     override fun setPresenter(_presenter: Contract.UserInfoPresenter) {
         presenter = _presenter
+    }
+
+    private fun getLatLong() {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            Log.e(GET_LAT_LONG, "Permissions not granted.")
+            return
+        }
+        fusedLocationClient.lastLocation.addOnSuccessListener {
+            if (it != null) {
+                lat = it.latitude
+                long = it.longitude
+                Log.e(GET_LAT_LONG, "Successful fetch. Coordinates are: $lat $long.")
+            }
+        }
+    }
+
+    private fun disableButtons() {
+        takePictureButton.isEnabled = false
+        backButton.isEnabled = false
+    }
+
+    private fun enableButtons() {
+        takePictureButton.isEnabled = true
+        backButton.isEnabled = true
     }
 }

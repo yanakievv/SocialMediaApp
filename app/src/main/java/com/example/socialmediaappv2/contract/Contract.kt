@@ -20,8 +20,7 @@ interface Contract {
         fun refreshDb()
 
         fun getUserPosts(): List<ImageModel>?
-        fun addPost(newPost: Bitmap)
-        fun addPost(newPost: String)
+        fun addPost(newPost: String, latLong: DoubleArray)
 
         fun getCurrentUser(): UserInfoModel
 

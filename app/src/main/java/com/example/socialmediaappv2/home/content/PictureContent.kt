@@ -1,16 +1,16 @@
 package com.example.socialmediaappv2.home.content
 
 import android.R
+import android.media.ExifInterface
 import android.util.Log
-import com.example.socialmediaappv2.contract.Contract
 import com.example.socialmediaappv2.data.ImageModel
 import com.example.socialmediaappv2.data.App.currentProfile
-import com.example.socialmediaappv2.home.HomeActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.io.File
+import java.io.IOException
 import java.util.ArrayList
 
 object PictureContent {
@@ -19,13 +19,11 @@ object PictureContent {
     var initLoaded = false
 
 
-
     fun initLoadImagesFromDatabase() {
         Log.e("LOADFROM", "database_all_posts")
         currentProfile.imageDao = currentProfile.databaseInstance.imageDAO
         runBlocking {
-            ITEMS =
-                currentProfile.imageDao.getPublisherPosts(currentProfile.currentUser.publisherId) as MutableList<ImageModel>
+            ITEMS = currentProfile.imageDao.getPublisherPosts(currentProfile.currentUser.publisherId) as MutableList<ImageModel>
             initLoaded = true
         }
 
@@ -34,7 +32,12 @@ object PictureContent {
     fun loadRecentImages() {
         if (currentProfile.imagesTaken > 0) {
             runBlocking {
-               addImages(currentProfile.imageDao.getLastPosts(currentProfile.currentUser.publisherId, currentProfile.imagesTaken))
+                addImages(
+                    currentProfile.imageDao.getPublisherLastPosts(
+                        currentProfile.currentUser.publisherId,
+                        currentProfile.imagesTaken
+                    )
+                )
             }
             currentProfile.imagesTaken = 0
         }
@@ -72,11 +75,11 @@ object PictureContent {
         }
     }
 
-    private fun binarySearchIterative(input: MutableList<ImageModel>, picId: Int) : Int{  // because when loading pictures from db to view we get them in ascending order of ids,
+    private fun binarySearchIterative(input: MutableList<ImageModel>, picId: Int): Int {  // because when loading pictures from db to view we get them in ascending order of ids,
         var low = 0                                                               // and when taking new pictures they are added in the same order we can use bsearch
         var high = input.size - 1                                            // to find the index of the picture in arraylist
-        var mid:Int
-        while(low <= high) {
+        var mid: Int
+        while (low <= high) {
             mid = low + ((high - low) / 2)
             when {
                 picId > input[mid].picId -> low = mid + 1
@@ -86,4 +89,4 @@ object PictureContent {
         }
         return -1
     }
-    }
+}

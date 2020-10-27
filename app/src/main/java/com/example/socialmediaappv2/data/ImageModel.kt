@@ -21,6 +21,12 @@ data class ImageModel(
     val publisherDisplayName: String,
 
     @ColumnInfo(name = "date")
-    val date: String
+    val date: String,
+
+    @ColumnInfo(name = "latitude")      //latitude and longitude are stored in decimal degrees
+    val latitude: Double,
+
+    @ColumnInfo(name = "longitude")
+    val longitude: Double
 
 )

@@ -2,6 +2,8 @@ package com.example.socialmediaappv2.home
 
 import android.content.Context
 import android.graphics.BitmapFactory
+import android.media.ExifInterface
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.socialmediaappv2.R
 import com.example.socialmediaappv2.data.ImageModel
 import com.example.socialmediaappv2.home.content.PictureContent
+import java.io.IOException
 
 
 class HomeRecyclerViewAdapter(
@@ -43,7 +46,6 @@ class HomeRecyclerViewAdapter(
         init {
             imageView.setOnClickListener { v ->
                 if (v?.id == imageView.id) {
-                    Toast.makeText(view.context, values[adapterPosition].picId.toString(), Toast.LENGTH_SHORT).show()
                     val popup = PopupMenu(context, this.contentView)
                     popup.inflate(R.menu.home_menu)
                     popup.setOnMenuItemClickListener { item ->
