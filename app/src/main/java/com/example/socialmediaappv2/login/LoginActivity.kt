@@ -24,6 +24,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.coroutines.runBlocking
 
@@ -136,9 +137,13 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
             runBlocking {
                 presenter.init(publisherId!!, publisherDisplayName!!, applicationContext)
             }
-            getLatLong()
-            val intent = Intent(this, HomeActivity::class.java)
-            startActivity(intent)
+            if (getLatLong()) {
+                val intent = Intent(this, HomeActivity::class.java)
+                startActivity(intent)
+            }
+            else {
+                Snackbar.make(continueButton, "For uploading and viewing others posts the app uses location services. You must enable location permissions for the app before continuing.", Snackbar.LENGTH_LONG).show()
+            }
         }
     }
 
@@ -189,7 +194,7 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
         presenter = _presenter
     }
 
-    private fun getLatLong() {
+    private fun getLatLong(): Boolean {
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -199,7 +204,7 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             Log.e(GET_LAT_LONG, "Permissions not granted.")
-            return
+            return false
         }
         fusedLocationClient.lastLocation.addOnSuccessListener {
             if (it != null) {
@@ -208,6 +213,7 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
                 Log.e(GET_LAT_LONG, "Successful fetch. Coordinates are: ${App.latLong[0]} ${App.latLong[1]}.")
             }
         }
+        return true
     }
 }
 
