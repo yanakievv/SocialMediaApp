@@ -134,10 +134,10 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
         }
 
         continueButton.setOnClickListener {
-            runBlocking {
-                presenter.init(publisherId!!, publisherDisplayName!!, applicationContext)
-            }
             if (getLatLong()) {
+                runBlocking {
+                    presenter.init(publisherId!!, publisherDisplayName!!, applicationContext)
+                }
                 val intent = Intent(this, HomeActivity::class.java)
                 startActivity(intent)
             }
