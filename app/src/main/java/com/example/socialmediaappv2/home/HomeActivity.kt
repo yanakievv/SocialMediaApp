@@ -8,13 +8,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.socialmediaappv2.R
 import com.example.socialmediaappv2.UserInfoPresenter
 import com.example.socialmediaappv2.contract.Contract
-import com.example.socialmediaappv2.data.App
-import com.example.socialmediaappv2.home.content.PictureContent
+import com.example.socialmediaappv2.explore.ExploreActivity
+import com.example.socialmediaappv2.home.content.PublisherPictureContent
 import com.example.socialmediaappv2.profile.ProfileActivity
 import com.example.socialmediaappv2.upload.Camera2Activity
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import kotlinx.android.synthetic.main.activity_home.*
-import kotlinx.android.synthetic.main.content_scrolling.*
+import kotlinx.android.synthetic.main.content_home_scrolling.*
 
 
 internal lateinit var presenter: Contract.UserInfoPresenter
@@ -28,10 +28,10 @@ class HomeActivity : AppCompatActivity(), Contract.MainView {
         super.onCreate(savedInstanceState)
         setPresenter(UserInfoPresenter(this))
         Log.e("HomeActivity", "onCreate")
-        if (!PictureContent.initLoaded) {
-            PictureContent.initLoadImagesFromDatabase()
+        if (!PublisherPictureContent.initLoaded) {
+            PublisherPictureContent.initLoadImagesFromDatabase()
         }
-        else PictureContent.loadRecentImages()
+        else PublisherPictureContent.loadRecentImages()
 
         setContentView(R.layout.activity_home)
         setSupportActionBar(findViewById(R.id.toolbar))
@@ -41,7 +41,9 @@ class HomeActivity : AppCompatActivity(), Contract.MainView {
             recyclerView = main_fragment.view as RecyclerView
             recyclerViewAdapter = (main_fragment.view as RecyclerView).adapter as HomeRecyclerViewAdapter
         }
-
+        explore_button.setOnClickListener {
+            startActivity(Intent(this, ExploreActivity::class.java))
+        }
         upload_button.setOnClickListener {
             startActivity(Intent(this, Camera2Activity::class.java))
         }
@@ -54,7 +56,7 @@ class HomeActivity : AppCompatActivity(), Contract.MainView {
     override fun onResume() {
         super.onResume()
         Log.e("HomeActivity", "onResume")
-        PictureContent.loadRecentImages()
+        PublisherPictureContent.loadRecentImages()
         recyclerViewAdapter?.notifyDataSetChanged()
 
 

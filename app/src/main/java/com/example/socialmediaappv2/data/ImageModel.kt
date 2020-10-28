@@ -23,10 +23,9 @@ data class ImageModel(
     @ColumnInfo(name = "date")
     val date: String,
 
-    @ColumnInfo(name = "latitude")      //latitude and longitude are stored in decimal degrees
+    @ColumnInfo(name = "latitude")      //latitude and longitude are stored in decimal degrees, radian = dd * 0.0175
     val latitude: Double,
 
     @ColumnInfo(name = "longitude")
     val longitude: Double
-
 )

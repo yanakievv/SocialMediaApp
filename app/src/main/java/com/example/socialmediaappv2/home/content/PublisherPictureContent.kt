@@ -1,32 +1,28 @@
 package com.example.socialmediaappv2.home.content
 
 import android.R
-import android.media.ExifInterface
 import android.util.Log
-import com.example.socialmediaappv2.data.ImageModel
 import com.example.socialmediaappv2.data.App.currentProfile
+import com.example.socialmediaappv2.data.ImageModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.io.File
-import java.io.IOException
-import java.util.ArrayList
+import java.util.*
 
-object PictureContent {
+object PublisherPictureContent {
 
     var ITEMS: MutableList<ImageModel> = ArrayList()
     var initLoaded = false
 
 
     fun initLoadImagesFromDatabase() {
-        Log.e("LOADFROM", "database_all_posts")
-        currentProfile.imageDao = currentProfile.databaseInstance.imageDAO
+        Log.e("LOADFROM", "database_all_publisher_posts")
         runBlocking {
             ITEMS = currentProfile.imageDao.getPublisherPosts(currentProfile.currentUser.publisherId) as MutableList<ImageModel>
             initLoaded = true
         }
-
     }
 
     fun loadRecentImages() {

@@ -1,16 +1,8 @@
 package com.example.socialmediaappv2
 
-import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Context.LOCATION_SERVICE
-import android.content.pm.PackageManager
-import android.location.Location
-import android.location.LocationManager
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat.getSystemService
 import com.example.socialmediaappv2.contract.Contract
 import com.example.socialmediaappv2.data.App.currentProfile.currentUser
 import com.example.socialmediaappv2.data.App.currentProfile.databaseInstance
@@ -19,8 +11,6 @@ import com.example.socialmediaappv2.data.App.currentProfile.userDao
 import com.example.socialmediaappv2.data.ImageModel
 import com.example.socialmediaappv2.data.UserDatabase
 import com.example.socialmediaappv2.data.UserInfoModel
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -40,6 +30,7 @@ class UserInfoPresenter(var view: Contract.MainView?): Contract.UserInfoPresente
             userDao.addUser(UserInfoModel(id, displayName, "Private", "", 0))
         }
         currentUser = userDao.getUser(id)
+
     }
 
     override fun reInit(id: String) {

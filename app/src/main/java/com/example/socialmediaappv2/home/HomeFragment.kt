@@ -1,19 +1,17 @@
 package com.example.socialmediaappv2.home
 
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import com.example.socialmediaappv2.R
-import com.example.socialmediaappv2.home.content.PictureContent
+import com.example.socialmediaappv2.home.content.PublisherPictureContent
 
-/**
- * A fragment representing a list of Items.
- */
+
 class HomeFragment : Fragment() {
 
     private var columnCount = 1
@@ -39,7 +37,7 @@ class HomeFragment : Fragment() {
                     columnCount <= 1 -> LinearLayoutManager(context)
                     else -> GridLayoutManager(context, columnCount)
                 }
-                adapter = HomeRecyclerViewAdapter(PictureContent.ITEMS, view.context)
+                adapter = HomeRecyclerViewAdapter(PublisherPictureContent.ITEMS, view.context)
             }
         }
         return view

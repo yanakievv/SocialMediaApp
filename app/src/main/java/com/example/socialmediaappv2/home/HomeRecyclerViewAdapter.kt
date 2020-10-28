@@ -2,20 +2,16 @@ package com.example.socialmediaappv2.home
 
 import android.content.Context
 import android.graphics.BitmapFactory
-import android.media.ExifInterface
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.TextView
-import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.socialmediaappv2.R
 import com.example.socialmediaappv2.data.ImageModel
-import com.example.socialmediaappv2.home.content.PictureContent
-import java.io.IOException
+import com.example.socialmediaappv2.home.content.PublisherPictureContent
 
 
 class HomeRecyclerViewAdapter(
@@ -35,12 +31,12 @@ class HomeRecyclerViewAdapter(
         val item = values[position]
         holder.imageView.setImageBitmap(BitmapFactory.decodeFile(item.image))
         holder.contentView.text = item.date
-            }
+    }
 
     override fun getItemCount(): Int = values.size
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val imageView: ImageView = view.findViewById(R.id.item_image_view)
+        val imageView: ImageView = view.findViewById(R.id.home_item_image_view)
         val contentView: TextView = view.findViewById(R.id.item_date)
 
         init {
@@ -51,11 +47,11 @@ class HomeRecyclerViewAdapter(
                     popup.setOnMenuItemClickListener { item ->
                         when (item.itemId) {
                             R.id.set_as_profile_picture -> {
-                                PictureContent.setProfilePicture(values[adapterPosition].picId)
+                                PublisherPictureContent.setProfilePicture(values[adapterPosition].picId)
                                 true
                             }
                             R.id.delete_post -> {
-                                PictureContent.removePost(values[adapterPosition].picId, values[adapterPosition].image)
+                                PublisherPictureContent.removePost(values[adapterPosition].picId, values[adapterPosition].image)
                                 notifyDataSetChanged()
                                 true
                             }

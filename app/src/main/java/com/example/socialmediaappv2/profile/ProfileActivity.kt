@@ -2,27 +2,22 @@ package com.example.socialmediaappv2.profile
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.View
 import android.widget.PopupMenu
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.socialmediaappv2.LoginActivity
 import com.example.socialmediaappv2.R
 import com.example.socialmediaappv2.contract.Contract
 import com.example.socialmediaappv2.data.App
+import com.example.socialmediaappv2.explore.ExploreActivity
 import com.example.socialmediaappv2.home.HomeActivity
-import com.example.socialmediaappv2.home.content.PictureContent
+import com.example.socialmediaappv2.login.LoginActivity
 import com.example.socialmediaappv2.upload.Camera2Activity
-
-import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.android.synthetic.main.activity_home.home_button
 import kotlinx.android.synthetic.main.activity_home.upload_button
 import kotlinx.android.synthetic.main.activity_profile.*
 import kotlinx.coroutines.runBlocking
-import java.io.File
 
 private lateinit var presenter: Contract.ProfileInfoPresenter
 
@@ -41,6 +36,9 @@ class ProfileActivity : AppCompatActivity(), Contract.ProfileView {
 
         update()
 
+        explore_button.setOnClickListener {
+            startActivity(Intent(this, ExploreActivity::class.java))
+        }
         upload_button.setOnClickListener {
             startActivity(Intent(this, Camera2Activity::class.java))
         }

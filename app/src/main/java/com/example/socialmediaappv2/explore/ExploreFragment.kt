@@ -1,23 +1,20 @@
 package com.example.socialmediaappv2.explore
 
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import com.example.socialmediaappv2.R
-import com.example.socialmediaappv2.data.ImageModel
-import com.example.socialmediaappv2.explore.content.PictureContent
+import com.example.socialmediaappv2.explore.content.PublicPictureContent
 
-/**
- * A fragment representing a list of Items.
- */
-class ExploreContentFragment : Fragment() {
 
-    private var columnCount = 3
+class ExploreFragment : Fragment() {
+
+    private var columnCount = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,7 +37,7 @@ class ExploreContentFragment : Fragment() {
                     columnCount <= 1 -> LinearLayoutManager(context)
                     else -> GridLayoutManager(context, columnCount)
                 }
-                adapter = MyExploreContentRecyclerViewAdapter(PictureContent.ITEMS)
+                adapter = ExploreRecyclerViewAdapter(PublicPictureContent.ITEMS, view.context)
             }
         }
         return view
@@ -48,13 +45,11 @@ class ExploreContentFragment : Fragment() {
 
     companion object {
 
-        // TODO: Customize parameter argument names
         const val ARG_COLUMN_COUNT = "column-count"
 
-        // TODO: Customize parameter initialization
         @JvmStatic
         fun newInstance(columnCount: Int) =
-            ExploreContentFragment().apply {
+            ExploreFragment().apply {
                 arguments = Bundle().apply {
                     putInt(ARG_COLUMN_COUNT, columnCount)
                 }

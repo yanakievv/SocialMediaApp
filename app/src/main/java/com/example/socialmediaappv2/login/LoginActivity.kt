@@ -1,29 +1,36 @@
-package com.example.socialmediaappv2
+package com.example.socialmediaappv2.login
 
 //import com.facebook.stetho.Stetho
+import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import com.example.socialmediaappv2.R
+import com.example.socialmediaappv2.UserInfoPresenter
 import com.example.socialmediaappv2.contract.Contract
-import com.example.socialmediaappv2.data.UserDatabase
+import com.example.socialmediaappv2.data.App
 import com.example.socialmediaappv2.home.HomeActivity
 import com.facebook.*
-import com.facebook.FacebookSdk.getApplicationContext
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
 import com.facebook.stetho.Stetho
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.coroutines.runBlocking
 
 private const val RC_SIGN_IN = 7
+private const val GET_LAT_LONG = "GETLATLONG"
 internal lateinit var presenter: Contract.UserInfoPresenter
+private lateinit var fusedLocationClient: FusedLocationProviderClient
 
 class LoginActivity : AppCompatActivity(), Contract.MainView {
 
@@ -34,6 +41,7 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         FacebookSdk.sdkInitialize(applicationContext)
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         setContentView(R.layout.activity_login)
         callbackManager = CallbackManager.Factory.create()
         Stetho.initializeWithDefaults(this)
@@ -125,7 +133,10 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
         }
 
         continueButton.setOnClickListener {
-            runBlocking { presenter.init(publisherId!!, publisherDisplayName!!, applicationContext) }
+            runBlocking {
+                presenter.init(publisherId!!, publisherDisplayName!!, applicationContext)
+            }
+            getLatLong()
             val intent = Intent(this, HomeActivity::class.java)
             startActivity(intent)
         }
@@ -176,6 +187,27 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
 
     override fun setPresenter(_presenter: Contract.UserInfoPresenter) {
         presenter = _presenter
+    }
+
+    private fun getLatLong() {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            Log.e(GET_LAT_LONG, "Permissions not granted.")
+            return
+        }
+        fusedLocationClient.lastLocation.addOnSuccessListener {
+            if (it != null) {
+                App.latLong[0] = it.latitude
+                App.latLong[1] = it.longitude
+                Log.e(GET_LAT_LONG, "Successful fetch. Coordinates are: ${App.latLong[0]} ${App.latLong[1]}.")
+            }
+        }
     }
 }
 
