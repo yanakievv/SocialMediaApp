@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_pressed="true"
-        android:drawable="@drawable/ic_baseline_camera_96" /> <!-- pressed -->
-    <item android:drawable="@drawable/ic_baseline_camera_96_black" /> <!-- default -->
-</selector>
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:insetLeft="4dp"
+    android:insetTop="6dp"
+    android:insetRight="4dp"
+    android:insetBottom="6dp">
+    <ripple android:color="?attr/colorControlHighlight">
+        <item>
+            <shape android:shape="rectangle"
+                android:tint="@color/colorPrimaryDark">
+                <corners android:radius="10dp" />
+                <solid android:color="@color/colorPrimary" />
+                <padding android:bottom="6dp" />
+            </shape>
+        </item>
+    </ripple>
+</inset>

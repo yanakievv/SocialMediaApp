@@ -16,6 +16,8 @@ object PublisherPictureContent {
     var ITEMS: MutableList<ImageModel> = ArrayList()
     var initLoaded = false
 
+    //TODO add variable for storing personal posts so we dont have to load them from the database every time we view other person's posts and come back to ours
+
     private lateinit var userInfo: UserInfoModel
     private lateinit var databaseInstance: UserDatabase
     private lateinit var userDAO: UserDAO
@@ -29,6 +31,7 @@ object PublisherPictureContent {
         Log.e("CURRENT_USER", App.currentUser.publisherId)
         Log.e("LOAD_FROM_USER", userId)
         Log.e("LOAD_QUANTITY", "database_all_publisher_posts")
+
         databaseInstance = UserDatabase.getInstance(context)
         imageDao = databaseInstance.imageDAO
         userDAO = databaseInstance.userDAO
