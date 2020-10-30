@@ -40,25 +40,30 @@ class HomeRecyclerViewAdapter(
         val contentView: TextView = view.findViewById(R.id.item_date)
 
         init {
-            imageView.setOnClickListener { v ->
-                if (v?.id == imageView.id) {
-                    val popup = PopupMenu(context, this.contentView)
-                    popup.inflate(R.menu.home_menu)
-                    popup.setOnMenuItemClickListener { item ->
-                        when (item.itemId) {
-                            R.id.set_as_profile_picture -> {
-                                PublisherPictureContent.setProfilePicture(values[adapterPosition].picId)
-                                true
+            if (PublisherPictureContent.isCurrentUser()) {
+                imageView.setOnClickListener { v ->
+                    if (v?.id == imageView.id) {
+                        val popup = PopupMenu(context, this.contentView)
+                        popup.inflate(R.menu.home_menu)
+                        popup.setOnMenuItemClickListener { item ->
+                            when (item.itemId) {
+                                R.id.set_as_profile_picture -> {
+                                    PublisherPictureContent.setProfilePicture(values[adapterPosition].picId)
+                                    true
+                                }
+                                R.id.delete_post -> {
+                                    PublisherPictureContent.removePost(
+                                        values[adapterPosition].picId,
+                                        values[adapterPosition].image
+                                    )
+                                    notifyDataSetChanged()
+                                    true
+                                }
+                                else -> false
                             }
-                            R.id.delete_post -> {
-                                PublisherPictureContent.removePost(values[adapterPosition].picId, values[adapterPosition].image)
-                                notifyDataSetChanged()
-                                true
-                            }
-                            else -> false
                         }
+                        popup.show()
                     }
-                    popup.show()
                 }
             }
         }

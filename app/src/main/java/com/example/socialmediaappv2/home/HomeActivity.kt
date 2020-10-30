@@ -3,11 +3,11 @@ package com.example.socialmediaappv2.home
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.example.socialmediaappv2.R
-import com.example.socialmediaappv2.UserInfoPresenter
-import com.example.socialmediaappv2.contract.Contract
+import com.example.socialmediaappv2.data.App
 import com.example.socialmediaappv2.explore.ExploreActivity
 import com.example.socialmediaappv2.home.content.PublisherPictureContent
 import com.example.socialmediaappv2.profile.ProfileActivity
@@ -17,29 +17,44 @@ import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.android.synthetic.main.content_home_scrolling.*
 
 
-internal lateinit var presenter: Contract.UserInfoPresenter
 
-class HomeActivity : AppCompatActivity(), Contract.MainView {
+class HomeActivity : AppCompatActivity() {
 
     private var recyclerViewAdapter: HomeRecyclerViewAdapter? = null
     private var recyclerView: RecyclerView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setPresenter(UserInfoPresenter(this))
         Log.e("HomeActivity", "onCreate")
-        if (!PublisherPictureContent.initLoaded) {
-            PublisherPictureContent.initLoadImagesFromDatabase()
+        if (!intent.hasExtra("userId")) {
+            if (!PublisherPictureContent.initLoaded) {
+                PublisherPictureContent.initLoadImagesFromDatabase(App.currentUser.publisherId, this)
+            } else PublisherPictureContent.loadRecentImages()
+            title = "My Posts"
         }
-        else PublisherPictureContent.loadRecentImages()
+        else {
+            PublisherPictureContent.initLoadImagesFromDatabase(intent.getStringExtra("userId")!!, this)
+            title = intent.getStringExtra("displayName") + "'s Posts"
+        }
 
         setContentView(R.layout.activity_home)
         setSupportActionBar(findViewById(R.id.toolbar))
         findViewById<CollapsingToolbarLayout>(R.id.toolbar_layout).title = title
 
+        if (PublisherPictureContent.isCurrentUser()) {
+            fab.visibility = View.INVISIBLE
+        }
+        else fab.visibility = View.VISIBLE
+
         if (recyclerViewAdapter == null) {
             recyclerView = main_fragment.view as RecyclerView
             recyclerViewAdapter = (main_fragment.view as RecyclerView).adapter as HomeRecyclerViewAdapter
+        }
+
+        fab.setOnClickListener {
+            PublisherPictureContent.initLoaded = false
+            finish()
+            startActivity(Intent(this, HomeActivity::class.java))
         }
         explore_button.setOnClickListener {
             startActivity(Intent(this, ExploreActivity::class.java))
@@ -50,6 +65,10 @@ class HomeActivity : AppCompatActivity(), Contract.MainView {
         profile_button.setOnClickListener {
             startActivity(Intent(this, ProfileActivity::class.java))
         }
+        home_button.setOnClickListener {
+            finish()
+            startActivity(Intent(this, HomeActivity::class.java))
+        }
 
     }
 
@@ -59,10 +78,5 @@ class HomeActivity : AppCompatActivity(), Contract.MainView {
         PublisherPictureContent.loadRecentImages()
         recyclerViewAdapter?.notifyDataSetChanged()
     }
-
-    override fun setPresenter(_presenter: Contract.UserInfoPresenter) {
-        presenter = _presenter
-    }
-
 
 }

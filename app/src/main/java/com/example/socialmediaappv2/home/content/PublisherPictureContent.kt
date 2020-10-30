@@ -1,9 +1,9 @@
 package com.example.socialmediaappv2.home.content
 
 import android.R
+import android.content.Context
 import android.util.Log
-import com.example.socialmediaappv2.data.App.currentProfile
-import com.example.socialmediaappv2.data.ImageModel
+import com.example.socialmediaappv2.data.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -16,33 +16,48 @@ object PublisherPictureContent {
     var ITEMS: MutableList<ImageModel> = ArrayList()
     var initLoaded = false
 
+    private lateinit var userInfo: UserInfoModel
+    private lateinit var databaseInstance: UserDatabase
+    private lateinit var userDAO: UserDAO
+    private lateinit var imageDao: ImageDAO
 
-    fun initLoadImagesFromDatabase() {
-        Log.e("LOADFROM", "database_all_publisher_posts")
+
+    private var isCurrentUser: Boolean = false
+
+
+    fun initLoadImagesFromDatabase(userId: String, context: Context) {
+        Log.e("CURRENT_USER", App.currentUser.publisherId)
+        Log.e("LOAD_FROM_USER", userId)
+        Log.e("LOAD_QUANTITY", "database_all_publisher_posts")
+        databaseInstance = UserDatabase.getInstance(context)
+        imageDao = databaseInstance.imageDAO
+        userDAO = databaseInstance.userDAO
+
         runBlocking {
-            ITEMS = currentProfile.imageDao.getPublisherPosts(currentProfile.currentUser.publisherId) as MutableList<ImageModel>
+            userInfo = userDAO.getUser(userId)
+            ITEMS = imageDao.getPublisherPosts(userInfo.publisherId) as MutableList<ImageModel>
+            isCurrentUser = App.currentUser.publisherId == userId
             initLoaded = true
         }
     }
 
     fun loadRecentImages() {
-        if (currentProfile.imagesTaken > 0) {
+        if (App.imagesTaken > 0) {
             runBlocking {
                 addImages(
-                    currentProfile.imageDao.getPublisherLastPosts(
-                        currentProfile.currentUser.publisherId,
-                        currentProfile.imagesTaken
+                    App.imageDao.getPublisherLastPosts(
+                        App.currentUser.publisherId,
+                        App.imagesTaken
                     )
                 )
             }
-            currentProfile.imagesTaken = 0
+            App.imagesTaken = 0
         }
-
     }
 
     private fun addImage(image: ImageModel) {
         ITEMS.add(image)
-        Log.e("LOADFROM", "camera_recent_post")
+        Log.e("LOAD_QUANTITY", "camera_recent_post")
     }
 
     private fun addImages(images: List<ImageModel>) {
@@ -52,21 +67,25 @@ object PublisherPictureContent {
     }
 
     fun setProfilePicture(picId: Int) {
-        currentProfile.currentUser.profilePic = picId
-        CoroutineScope(Dispatchers.IO).launch {
-            currentProfile.userDao.updateUser(currentProfile.currentUser)
+        if (isCurrentUser) {
+            App.currentUser.profilePic = picId
+            CoroutineScope(Dispatchers.IO).launch {
+                App.userDao.updateUser(App.currentUser)
+            }
         }
     }
 
     fun removePost(picId: Int, absolutePath: String) {
-        ITEMS.removeAt(binarySearchIterative(ITEMS, picId))
-        CoroutineScope(Dispatchers.IO).launch {
-            currentProfile.imageDao.removePost(currentProfile.currentUser.publisherId, picId)
-            val target = File(absolutePath)
-            Log.e(" target_path", "" + R.attr.path)
-            if (target.exists() && target.isFile && target.canWrite()) {
-                target.delete()
-                Log.e("d_file", "" + target.name)
+        if (isCurrentUser) {
+            ITEMS.removeAt(binarySearchIterative(ITEMS, picId))
+            CoroutineScope(Dispatchers.IO).launch {
+                App.imageDao.removePost(App.currentUser.publisherId, picId)
+                val target = File(absolutePath)
+                Log.e(" target_path", "" + R.attr.path)
+                if (target.exists() && target.isFile && target.canWrite()) {
+                    target.delete()
+                    Log.e("d_file", "" + target.name)
+                }
             }
         }
     }
@@ -84,5 +103,9 @@ object PublisherPictureContent {
             }
         }
         return -1
+    }
+
+    fun isCurrentUser(): Boolean {
+        return isCurrentUser
     }
 }

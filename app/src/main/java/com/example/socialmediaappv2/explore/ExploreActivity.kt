@@ -33,7 +33,6 @@ class ExploreActivity : AppCompatActivity() {
             recyclerViewAdapter = (main_fragment.view as RecyclerView).adapter as ExploreRecyclerViewAdapter
         }
 
-
         findViewById<FloatingActionButton>(R.id.fab).setOnClickListener {
             finish()
             startActivity(intent)
@@ -46,6 +45,10 @@ class ExploreActivity : AppCompatActivity() {
         }
         profile_button.setOnClickListener {
             startActivity(Intent(this, ProfileActivity::class.java))
+        }
+        explore_button.setOnClickListener {
+            finish()
+            startActivity(Intent(this, ExploreActivity::class.java))
         }
     }
 }

@@ -12,6 +12,7 @@ import com.example.socialmediaappv2.contract.Contract
 import com.example.socialmediaappv2.data.App
 import com.example.socialmediaappv2.explore.ExploreActivity
 import com.example.socialmediaappv2.home.HomeActivity
+import com.example.socialmediaappv2.home.content.PublisherPictureContent
 import com.example.socialmediaappv2.login.LoginActivity
 import com.example.socialmediaappv2.upload.Camera2Activity
 import kotlinx.android.synthetic.main.activity_home.home_button
@@ -20,7 +21,7 @@ import kotlinx.android.synthetic.main.activity_profile.*
 import kotlinx.coroutines.runBlocking
 
 private lateinit var presenter: Contract.ProfileInfoPresenter
-
+private lateinit var userId: String
 
 class ProfileActivity : AppCompatActivity(), Contract.ProfileView {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,14 +29,25 @@ class ProfileActivity : AppCompatActivity(), Contract.ProfileView {
         setContentView(R.layout.activity_profile)
         setPresenter(ProfileInfoPresenter(this))
         if (intent.hasExtra("userId")) {
-            runBlocking { presenter.init(intent.getStringExtra("userId")!!, applicationContext) }
+            userId = intent.getStringExtra("userId")!!
         }
         else {
-            runBlocking { presenter.init(App.currentUser.publisherId, applicationContext) }
+            userId = App.currentUser.publisherId
         }
-
+        runBlocking { presenter.init(userId, applicationContext) }
         update()
 
+        viewPosts.setOnClickListener {
+            if (userId == App.currentUser.publisherId) {
+                startActivity(Intent(this, HomeActivity::class.java))
+            }
+            else {
+                val intent = Intent(this, HomeActivity::class.java)
+                intent.putExtra("userId", userId)
+                intent.putExtra("displayName", presenter.getDisplayName())
+                startActivity(intent)
+            }
+        }
         backButton.setOnClickListener {
             if (intent.hasExtra("userId")) intent.extras!!.remove("userId")
             runBlocking {  presenter.init(App.currentUser.publisherId, applicationContext) }
@@ -50,14 +62,19 @@ class ProfileActivity : AppCompatActivity(), Contract.ProfileView {
         home_button.setOnClickListener {
             startActivity(Intent(this, HomeActivity::class.java))
         }
+        profile_button.setOnClickListener {
+            finish()
+            startActivity(Intent(this, ProfileActivity::class.java))
+        }
         settings.setOnClickListener {
             val popup = PopupMenu(this, this.settings)
             popup.inflate(R.menu.profile_settings_menu)
             popup.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
                     R.id.logout -> {
+                        PublisherPictureContent.initLoaded = false
+                        finishAffinity()
                         startActivity(Intent(this, LoginActivity::class.java))
-                        finish()
                         true
                     }
                     R.id.edit_profile -> {
