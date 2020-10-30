@@ -58,8 +58,6 @@ class HomeActivity : AppCompatActivity(), Contract.MainView {
         Log.e("HomeActivity", "onResume")
         PublisherPictureContent.loadRecentImages()
         recyclerViewAdapter?.notifyDataSetChanged()
-
-
     }
 
     override fun setPresenter(_presenter: Contract.UserInfoPresenter) {

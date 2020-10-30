@@ -31,11 +31,16 @@ class ProfileActivity : AppCompatActivity(), Contract.ProfileView {
             runBlocking { presenter.init(intent.getStringExtra("userId")!!, applicationContext) }
         }
         else {
-           runBlocking { presenter.init(App.currentUser.publisherId, applicationContext) }
+            runBlocking { presenter.init(App.currentUser.publisherId, applicationContext) }
         }
 
         update()
 
+        backButton.setOnClickListener {
+            if (intent.hasExtra("userId")) intent.extras!!.remove("userId")
+            runBlocking {  presenter.init(App.currentUser.publisherId, applicationContext) }
+            update()
+        }
         explore_button.setOnClickListener {
             startActivity(Intent(this, ExploreActivity::class.java))
         }
@@ -89,9 +94,11 @@ class ProfileActivity : AppCompatActivity(), Contract.ProfileView {
     private fun settingsButtonView(visible: Boolean) {
         if (visible) {
             settings.visibility = View.VISIBLE
+            backButton.visibility = View.INVISIBLE
         }
         else {
             settings.visibility = View.INVISIBLE
+            backButton.visibility = View.VISIBLE
         }
     }
 

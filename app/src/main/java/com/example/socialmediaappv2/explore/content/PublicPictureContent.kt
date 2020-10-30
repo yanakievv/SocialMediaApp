@@ -18,8 +18,7 @@ object PublicPictureContent {
     fun init(radius: Double) {
         Log.e("LOADFROM", "database_all_posts")
         runBlocking {
-            //ITEMS = filterRecords(App.imageDao.getPosts(App.currentUser.publisherId) as MutableList<ImageModel>, radius)
-            ITEMS = App.imageDao.getPublisherPosts(App.currentUser.publisherId) as MutableList<ImageModel>
+            ITEMS = filterRecords(App.imageDao.getPosts(App.currentUser.publisherId) as MutableList<ImageModel>, radius)
         }
     }
 
@@ -37,7 +36,8 @@ object PublicPictureContent {
         val dy = abs(image.latitude - lat)
 
         if (dx > R || dy > R) return false
-        if (dx + dy <= R) return true //first two checks are for optimization purposes
+        if (dx + dy <= R) return true
+        //first two checks are for optimization purposes
         return dx.pow(2) + dy.pow(2) <= R.pow(2)
     }
 

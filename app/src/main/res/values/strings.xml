@@ -31,4 +31,6 @@
     <string name="profile_pic_info">*You can set your profile picture from the Home menu.</string>
     <string name="privateQuestionMark">Private</string>
     <string name="title_activity_explore">Explore</string>
+    <string name="preview">Preview</string>
+    <string name="visit_profile">Visit publisher profile</string>
 </resources>
