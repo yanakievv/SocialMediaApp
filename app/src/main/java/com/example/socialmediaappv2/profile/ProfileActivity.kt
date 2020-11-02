@@ -9,7 +9,7 @@ import android.widget.PopupMenu
 import androidx.appcompat.app.AppCompatActivity
 import com.example.socialmediaappv2.R
 import com.example.socialmediaappv2.contract.Contract
-import com.example.socialmediaappv2.data.App
+import com.example.socialmediaappv2.data.SharedPreference
 import com.example.socialmediaappv2.explore.ExploreActivity
 import com.example.socialmediaappv2.home.HomeActivity
 import com.example.socialmediaappv2.home.content.PublisherPictureContent
@@ -22,23 +22,25 @@ import kotlinx.coroutines.runBlocking
 
 private lateinit var presenter: Contract.ProfileInfoPresenter
 private lateinit var userId: String
+private lateinit var sharedPref: SharedPreference
 
 class ProfileActivity : AppCompatActivity(), Contract.ProfileView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
+        sharedPref = SharedPreference(this)
         setPresenter(ProfileInfoPresenter(this))
         if (intent.hasExtra("userId")) {
             userId = intent.getStringExtra("userId")!!
         }
         else {
-            userId = App.currentUser.publisherId
+            userId = sharedPref.getString("publisherId")!!
         }
-        runBlocking { presenter.init(userId, applicationContext) }
+        presenter.init(userId, this)
         update()
 
         viewPosts.setOnClickListener {
-            if (userId == App.currentUser.publisherId) {
+            if (userId == sharedPref.getString("publisherId")!!) {
                 startActivity(Intent(this, HomeActivity::class.java))
             }
             else {
@@ -50,7 +52,7 @@ class ProfileActivity : AppCompatActivity(), Contract.ProfileView {
         }
         backButton.setOnClickListener {
             if (intent.hasExtra("userId")) intent.extras!!.remove("userId")
-            runBlocking {  presenter.init(App.currentUser.publisherId, applicationContext) }
+            runBlocking {  presenter.init(sharedPref.getString("publisherId")!!, applicationContext) }
             update()
         }
         explore_button.setOnClickListener {
@@ -73,6 +75,8 @@ class ProfileActivity : AppCompatActivity(), Contract.ProfileView {
                 when (item.itemId) {
                     R.id.logout -> {
                         PublisherPictureContent.initLoaded = false
+                        sharedPref.clearData()
+                        PublisherPictureContent.TEMP.clear()
                         finishAffinity()
                         startActivity(Intent(this, LoginActivity::class.java))
                         true
@@ -95,7 +99,7 @@ class ProfileActivity : AppCompatActivity(), Contract.ProfileView {
 
     @SuppressLint("SetTextI18n")
     override fun update() {
-        presenter.reInit(App.currentUser.publisherId)
+        presenter.reInit(sharedPref.getString("publisherId")!!)
         profilePicture.setImageBitmap(BitmapFactory.decodeFile(presenter.getProfilePic()?.image))
         displayName.text = presenter.getDisplayName()
         posts.text = "Posts: " + presenter.getNumberOfPosts()
@@ -120,7 +124,7 @@ class ProfileActivity : AppCompatActivity(), Contract.ProfileView {
     }
 
     private fun displayFragment() {
-        val editProfileFragment = EditProfileFragment.newInstance(App.currentUser.publisherId)
+        val editProfileFragment = EditProfileFragment.newInstance(sharedPref.getString("publisherId")!!)
         val fragmentManager = supportFragmentManager
         val fragmentTransaction = fragmentManager.beginTransaction()
         fragmentTransaction.add(fragment_container.id, editProfileFragment).commit()

@@ -13,7 +13,7 @@ import androidx.core.app.ActivityCompat
 import com.example.socialmediaappv2.R
 import com.example.socialmediaappv2.UserInfoPresenter
 import com.example.socialmediaappv2.contract.Contract
-import com.example.socialmediaappv2.data.App
+import com.example.socialmediaappv2.data.SharedPreference
 import com.example.socialmediaappv2.home.HomeActivity
 import com.facebook.*
 import com.facebook.login.LoginManager
@@ -31,7 +31,8 @@ import kotlinx.coroutines.runBlocking
 private const val RC_SIGN_IN = 7
 private const val GET_LAT_LONG = "GETLATLONG"
 internal lateinit var presenter: Contract.UserInfoPresenter
-private lateinit var fusedLocationClient: FusedLocationProviderClient
+private lateinit var sharedPref: SharedPreference
+internal lateinit var fusedLocationClient: FusedLocationProviderClient
 
 class LoginActivity : AppCompatActivity(), Contract.MainView {
 
@@ -42,6 +43,7 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         FacebookSdk.sdkInitialize(applicationContext)
+        sharedPref = SharedPreference(this)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         setContentView(R.layout.activity_login)
         callbackManager = CallbackManager.Factory.create()
@@ -93,8 +95,8 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
                 ) {
                     AccessToken.setCurrentAccessToken(null)
                     LoginManager.getInstance().logOut()
-                    updateUI()
                 }.executeAsync()
+                updateUI()
             }
 
             // Facebook Login
@@ -137,7 +139,9 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
             if (getLatLong()) {
                 runBlocking {
                     presenter.init(publisherId!!, publisherDisplayName!!, applicationContext)
+
                 }
+
                 val intent = Intent(this, HomeActivity::class.java)
                 startActivity(intent)
             }
@@ -208,9 +212,9 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
         }
         fusedLocationClient.lastLocation.addOnSuccessListener {
             if (it != null) {
-                App.latLong[0] = it.latitude
-                App.latLong[1] = it.longitude
-                Log.e(GET_LAT_LONG, "Successful fetch. Coordinates are: ${App.latLong[0]} ${App.latLong[1]}.")
+                sharedPref.save("lat", it.latitude.toString())
+                sharedPref.save("long", it.longitude.toString())
+                Log.e(GET_LAT_LONG, "Successful fetch. Coordinates are: ${it.latitude} ${it.longitude}.")
             }
         }
         return true

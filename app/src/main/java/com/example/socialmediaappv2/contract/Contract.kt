@@ -2,7 +2,6 @@ package com.example.socialmediaappv2.contract
 
 import android.content.Context
 import android.graphics.Bitmap
-import com.example.socialmediaappv2.data.App
 import com.example.socialmediaappv2.data.ImageModel
 import com.example.socialmediaappv2.data.UserInfoModel
 
@@ -20,7 +19,7 @@ interface Contract {
         fun refreshDb()
 
         fun getUserPosts(): List<ImageModel>?
-        fun addPost(newPost: String, latLong: DoubleArray)
+        fun addPost(newPost: String, latLong: DoubleArray, context: Context)
 
         fun getCurrentUser(): UserInfoModel
 
@@ -30,7 +29,7 @@ interface Contract {
     }
     interface ProfileInfoPresenter: BasePresenter {
 
-        suspend fun init(userId: String, context: Context)
+        fun init(userId: String, context: Context)
         fun reInit(id: String)
         fun refreshDb()
 

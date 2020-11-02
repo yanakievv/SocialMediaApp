@@ -22,7 +22,7 @@ class ExploreActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        PublicPictureContent.init(50.0)
+        PublicPictureContent.init(50.0, this)
 
         setContentView(R.layout.activity_explore)
         setSupportActionBar(findViewById(R.id.toolbar))

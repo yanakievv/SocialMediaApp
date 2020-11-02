@@ -1,13 +1,8 @@
 package com.example.socialmediaappv2.profile
 
 import android.content.Context
-import android.graphics.Bitmap
 import com.example.socialmediaappv2.contract.Contract
 import com.example.socialmediaappv2.data.*
-import com.example.socialmediaappv2.data.App.currentProfile
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 class ProfileInfoPresenter(var view: Contract.ProfileView?): Contract.ProfileInfoPresenter  {
@@ -16,22 +11,23 @@ class ProfileInfoPresenter(var view: Contract.ProfileView?): Contract.ProfileInf
     private lateinit var databaseInstance: UserDatabase
     private lateinit var userDao: UserDAO
     private lateinit var imageDao: ImageDAO
+    private lateinit var sharedPref: SharedPreference
 
     private var isCurrentUser: Boolean = false
 
-    override suspend fun init(userId: String, context: Context) {
+    override fun init(userId: String, context: Context) {
+        sharedPref = SharedPreference(context)
         databaseInstance = UserDatabase.getInstance(context)
         userDao = databaseInstance.userDAO
         imageDao = databaseInstance.imageDAO
-        userInfo = userDao.getUser(userId)
-        isCurrentUser = (currentProfile.currentUser.publisherId == userId)
+        runBlocking {  userInfo = userDao.getUser(userId) }
+        isCurrentUser = (sharedPref.getString("publisherId") == userId)
     }
 
     override fun reInit(id: String) {
         if (isCurrentUser) {
             runBlocking {
-                currentProfile.currentUser = userDao.getUser(id)
-                userInfo = currentProfile.currentUser
+                userInfo = userDao.getUser(id)
             }
         }
     }
@@ -39,6 +35,11 @@ class ProfileInfoPresenter(var view: Contract.ProfileView?): Contract.ProfileInf
     override fun refreshDb() {
         if (isCurrentUser) {
             runBlocking{ userDao.updateUser(userInfo) }
+            sharedPref.clearData()
+            sharedPref.save("publisherId", userInfo.publisherId)
+            sharedPref.save("displayName", userInfo.displayName)
+            sharedPref.save("birthDate", userInfo.birthDate)
+            sharedPref.save("bio", userInfo.bio)
         }
     }
 
@@ -79,7 +80,7 @@ class ProfileInfoPresenter(var view: Contract.ProfileView?): Contract.ProfileInf
     }
 
     override fun getNumberOfPosts(): Int {
-        var num: Int = 0
+        var num = 0
         runBlocking { num = imageDao.getPublisherPosts(userInfo.publisherId).size}
         return num
     }

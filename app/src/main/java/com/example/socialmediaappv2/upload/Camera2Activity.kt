@@ -30,8 +30,9 @@ import androidx.core.app.ActivityCompat
 import com.example.socialmediaappv2.R
 import com.example.socialmediaappv2.UserInfoPresenter
 import com.example.socialmediaappv2.contract.Contract
-import com.example.socialmediaappv2.data.App.currentProfile
-import com.example.socialmediaappv2.data.App.currentProfile.latLong
+import com.example.socialmediaappv2.data.SharedPreference
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import kotlinx.android.synthetic.main.activity_camera2.*
 import kotlinx.coroutines.runBlocking
 import java.io.File
@@ -44,7 +45,11 @@ import kotlin.collections.ArrayList
 
 
 private const val REQUEST_CAMERA_PERMISSION = 200
+private const val GET_LAT_LONG = "GETLATLONG"
 internal lateinit var presenter: Contract.UserInfoPresenter
+private lateinit var fusedLocationClient: FusedLocationProviderClient
+
+//TODO fix rotation, add zoom, add focus on tap
 
 
 class Camera2Activity : AppCompatActivity(), Contract.MainView {
@@ -66,6 +71,8 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
 
     private var mBackgroundHandler: Handler? = null
     private var mBackgroundThread: HandlerThread? = null
+
+    private lateinit var sharedPref: SharedPreference
 
     private class ImageSaver(val mImage: Image, val mFile: File): Runnable {
         override fun run() {
@@ -104,9 +111,11 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
         orientations.append(Surface.ROTATION_180, 180)
         orientations.append(Surface.ROTATION_270, 270)
 
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        sharedPref = SharedPreference(this)
         setPresenter(UserInfoPresenter(this))
         runBlocking { presenter.init(
-            currentProfile.currentUser.publisherId,
+            sharedPref.getString("publisherId")!!,
             "",
             this@Camera2Activity
         )
@@ -173,6 +182,10 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
     @RequiresApi(Build.VERSION_CODES.M)
     private fun takePicture() {
         disableButtons()
+        if (!getLatLong())
+        {
+            return
+        }
         if (null == cameraDevice) {
             Log.e(tag, "cameraDevice null")
             return
@@ -208,7 +221,7 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
             captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, orientations.get(rotation!!))
             val readerListener: ImageReader.OnImageAvailableListener =
                 ImageReader.OnImageAvailableListener {
-                    currentProfile.imagesTaken++
+                    SharedPreference.imagesTaken++
                     val pathD = getExternalFilesDir(null)
                         .toString() + "/" + Environment.DIRECTORY_DCIM + "/"
                     val mediaStorageDir = File(pathD, "MyAlbum")
@@ -223,8 +236,8 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
 
                     val values = ContentValues()
                     values.put(Media.TITLE, "ImageName")
-                    values.put(Media.DATE_TAKEN, System.currentTimeMillis())
-                    values.put(Media.ORIENTATION, orientations.get(attr.rotation))
+                    //values.put(Media.DATE_TAKEN, System.currentTimeMillis())
+                    //values.put(Media.ORIENTATION, orientations.get(attr.rotation))
                     values.put(Media.CONTENT_TYPE, "image/jpeg")
                     values.put("_data", mFile.absolutePath)
                     MediaScannerConnection.scanFile(
@@ -235,7 +248,7 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
                     val cr: ContentResolver = applicationContext.contentResolver
                     cr.insert(Media.EXTERNAL_CONTENT_URI, values)
                     mBackgroundHandler!!.post(ImageSaver(it.acquireNextImage(), mFile))
-                    presenter.addPost(mFile.absolutePath, latLong)
+                    presenter.addPost(mFile.absolutePath, doubleArrayOf(lat, long), this)
                 }
             reader.setOnImageAvailableListener(readerListener, mBackgroundHandler)
             val captureListener: CaptureCallback = object : CaptureCallback() {
@@ -413,5 +426,27 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
     private fun enableButtons() {
         takePictureButton.isEnabled = true
         backButton.isEnabled = true
+    }
+
+    private fun getLatLong(): Boolean {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            Log.e(GET_LAT_LONG, "Permissions not granted.")
+            return false
+        }
+        fusedLocationClient.lastLocation.addOnSuccessListener {
+            if (it != null) {
+                lat = it.latitude
+                long = it.longitude
+                Log.e(GET_LAT_LONG, "Successful fetch. Coordinates are: ${it.latitude} ${it.longitude}.")
+            }
+        }
+        return true
     }
 }

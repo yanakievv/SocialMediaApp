@@ -7,16 +7,17 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.example.socialmediaappv2.R
-import com.example.socialmediaappv2.data.App
+import com.example.socialmediaappv2.data.SharedPreference
 import com.example.socialmediaappv2.explore.ExploreActivity
 import com.example.socialmediaappv2.home.content.PublisherPictureContent
 import com.example.socialmediaappv2.profile.ProfileActivity
 import com.example.socialmediaappv2.upload.Camera2Activity
+import com.example.socialmediaappv2.upload.presenter
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.android.synthetic.main.content_home_scrolling.*
 
-
+internal lateinit var sharedPref: SharedPreference
 
 class HomeActivity : AppCompatActivity() {
 
@@ -25,11 +26,12 @@ class HomeActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        sharedPref = SharedPreference(this)
         Log.e("HomeActivity", "onCreate")
         if (!intent.hasExtra("userId")) {
             if (!PublisherPictureContent.initLoaded) {
-                PublisherPictureContent.initLoadImagesFromDatabase(App.currentUser.publisherId, this)
-            } else PublisherPictureContent.loadRecentImages()
+                PublisherPictureContent.initLoadImagesFromDatabase(sharedPref.getString("publisherId")!!, this)
+            } else PublisherPictureContent.loadRecentImages(sharedPref.getString("publisherId")!!, this)
             title = "My Posts"
         }
         else {
@@ -60,6 +62,9 @@ class HomeActivity : AppCompatActivity() {
             startActivity(Intent(this, ExploreActivity::class.java))
         }
         upload_button.setOnClickListener {
+            if (!PublisherPictureContent.isCurrentUser()) {
+                finish()
+            }
             startActivity(Intent(this, Camera2Activity::class.java))
         }
         profile_button.setOnClickListener {
@@ -75,7 +80,9 @@ class HomeActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         Log.e("HomeActivity", "onResume")
-        PublisherPictureContent.loadRecentImages()
+        if (PublisherPictureContent.isCurrentUser()) {
+            PublisherPictureContent.loadRecentImages(sharedPref.getString("publisherId")!!, this)
+        }
         recyclerViewAdapter?.notifyDataSetChanged()
     }
 

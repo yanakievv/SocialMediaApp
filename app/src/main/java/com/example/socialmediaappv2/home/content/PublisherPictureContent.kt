@@ -1,6 +1,5 @@
 package com.example.socialmediaappv2.home.content
 
-import android.R
 import android.content.Context
 import android.util.Log
 import com.example.socialmediaappv2.data.*
@@ -14,13 +13,14 @@ import java.util.*
 object PublisherPictureContent {
 
     var ITEMS: MutableList<ImageModel> = ArrayList()
+    var TEMP: MutableList<ImageModel> = ArrayList()
     var initLoaded = false
 
-    //TODO add variable for storing personal posts so we dont have to load them from the database every time we view other person's posts and come back to ours
 
+    private lateinit var sharedPref: SharedPreference
     private lateinit var userInfo: UserInfoModel
     private lateinit var databaseInstance: UserDatabase
-    private lateinit var userDAO: UserDAO
+    private lateinit var userDao: UserDAO
     private lateinit var imageDao: ImageDAO
 
 
@@ -28,33 +28,47 @@ object PublisherPictureContent {
 
 
     fun initLoadImagesFromDatabase(userId: String, context: Context) {
-        Log.e("CURRENT_USER", App.currentUser.publisherId)
         Log.e("LOAD_FROM_USER", userId)
-        Log.e("LOAD_QUANTITY", "database_all_publisher_posts")
 
+        sharedPref = SharedPreference(context)
         databaseInstance = UserDatabase.getInstance(context)
         imageDao = databaseInstance.imageDAO
-        userDAO = databaseInstance.userDAO
+        userDao = databaseInstance.userDAO
 
-        runBlocking {
-            userInfo = userDAO.getUser(userId)
-            ITEMS = imageDao.getPublisherPosts(userInfo.publisherId) as MutableList<ImageModel>
-            isCurrentUser = App.currentUser.publisherId == userId
-            initLoaded = true
+        if (userId == sharedPref.getString("publisherId")!! && ITEMS != TEMP) {
+            isCurrentUser = true
+            ITEMS = TEMP
+            Log.e("LOAD_QUANTITY", "load_from_temp")
+        }
+        else {
+            runBlocking {
+                userInfo = userDao.getUser(userId)
+                ITEMS = imageDao.getPublisherPosts(userInfo.publisherId) as MutableList<ImageModel>
+                isCurrentUser = sharedPref.getString("publisherId")!! == userId
+                initLoaded = true
+                Log.e("LOAD_QUANTITY", "database_all_publisher_posts")
+            }
+            if (isCurrentUser) {
+                TEMP = ITEMS
+            }
+            Log.e("CURRENT_USER", userInfo.publisherId)
         }
     }
 
-    fun loadRecentImages() {
-        if (App.imagesTaken > 0) {
+    fun loadRecentImages(userId: String, context: Context) {
+        if (SharedPreference.imagesTaken > 0 && isCurrentUser) {
             runBlocking {
                 addImages(
-                    App.imageDao.getPublisherLastPosts(
-                        App.currentUser.publisherId,
-                        App.imagesTaken
+                    imageDao.getPublisherLastPosts(
+                        sharedPref.getString("publisherId")!!,
+                        SharedPreference.imagesTaken
                     )
                 )
             }
-            App.imagesTaken = 0
+            SharedPreference.imagesTaken = 0
+        }
+        else if (!isCurrentUser) {
+            initLoadImagesFromDatabase(userId, context)
         }
     }
 
@@ -71,9 +85,9 @@ object PublisherPictureContent {
 
     fun setProfilePicture(picId: Int) {
         if (isCurrentUser) {
-            App.currentUser.profilePic = picId
+            userInfo.profilePic = picId
             CoroutineScope(Dispatchers.IO).launch {
-                App.userDao.updateUser(App.currentUser)
+                userDao.updateUser(userInfo)
             }
         }
     }
@@ -82,9 +96,9 @@ object PublisherPictureContent {
         if (isCurrentUser) {
             ITEMS.removeAt(binarySearchIterative(ITEMS, picId))
             CoroutineScope(Dispatchers.IO).launch {
-                App.imageDao.removePost(App.currentUser.publisherId, picId)
+                imageDao.removePost(sharedPref.getString("publisherId")!!, picId)
                 val target = File(absolutePath)
-                Log.e(" target_path", "" + R.attr.path)
+                Log.e(" target_path", "" + android.R.attr.path)
                 if (target.exists() && target.isFile && target.canWrite()) {
                     target.delete()
                     Log.e("d_file", "" + target.name)
@@ -94,8 +108,8 @@ object PublisherPictureContent {
     }
 
     private fun binarySearchIterative(input: MutableList<ImageModel>, picId: Int): Int {  // because when loading pictures from db to view we get them in ascending order of ids,
-        var low = 0                                                               // and when taking new pictures they are added in the same order we can use bsearch
-        var high = input.size - 1                                            // to find the index of the picture in arraylist
+        var low = 0                                                                       // and when taking new pictures they are added in the same order we can use bsearch
+        var high = input.size - 1                                                    // to find the index of the picture in arraylist
         var mid: Int
         while (low <= high) {
             mid = low + ((high - low) / 2)

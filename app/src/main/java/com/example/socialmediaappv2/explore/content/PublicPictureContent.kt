@@ -1,9 +1,9 @@
 package com.example.socialmediaappv2.explore.content
 
+import android.content.Context
 import android.util.Log
-import com.example.socialmediaappv2.data.App
-import com.example.socialmediaappv2.data.App.currentProfile.latLong
-import com.example.socialmediaappv2.data.ImageModel
+import com.example.socialmediaappv2.data.*
+import com.example.socialmediaappv2.home.content.PublisherPictureContent
 import kotlinx.coroutines.runBlocking
 import java.util.*
 import kotlin.math.abs
@@ -15,10 +15,29 @@ object PublicPictureContent {
 
     var ITEMS: MutableList<ImageModel> = ArrayList()
 
-    fun init(radius: Double) {
+    private lateinit var sharedPref: SharedPreference
+    private lateinit var userInfo: UserInfoModel
+    private lateinit var databaseInstance: UserDatabase
+    private lateinit var userDAO: UserDAO
+    private lateinit var imageDao: ImageDAO
+
+    private var latLong: DoubleArray = doubleArrayOf(0.0, 0.0)
+
+
+    fun init(radius: Double, context: Context) {
         Log.e("LOADFROM", "database_all_posts")
+
+        sharedPref = SharedPreference(context)
+        databaseInstance = UserDatabase.getInstance(context)
+        imageDao = databaseInstance.imageDAO
+        userDAO = databaseInstance.userDAO
+
+        latLong[0] = sharedPref.getString("lat")!!.toDouble()
+        latLong[1] = sharedPref.getString("long")!!.toDouble()
+
         runBlocking {
-            ITEMS = filterRecords(App.imageDao.getPosts(App.currentUser.publisherId) as MutableList<ImageModel>, radius)
+            userInfo = userDAO.getUser(sharedPref.getString("publisherId")!!)
+            ITEMS = filterRecords(imageDao.getPosts(userInfo.publisherId) as MutableList<ImageModel>, radius)
         }
     }
 
