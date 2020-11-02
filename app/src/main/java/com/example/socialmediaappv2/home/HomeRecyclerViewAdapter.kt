@@ -30,6 +30,16 @@ class HomeRecyclerViewAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = values[position]
         holder.imageView.setImageBitmap(BitmapFactory.decodeFile(item.image))
+        when (item.rotation) {
+            -4 -> holder.imageView.rotation = 180F
+            -3 -> holder.imageView.rotation = 90F
+            -2 -> holder.imageView.rotation = 0F
+            -1 -> holder.imageView.rotation = 270F
+            1 -> holder.imageView.rotation = 90F
+            2 -> holder.imageView.rotation = 0F
+            3 -> holder.imageView.rotation = 270F
+            4 -> holder.imageView.rotation = 180F
+        }
         holder.contentView.text = item.date
     }
 
@@ -73,6 +83,4 @@ class HomeRecyclerViewAdapter(
 
         }
     }
-
-
 }

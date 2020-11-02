@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [ImageModel::class, UserInfoModel::class], version = 8, exportSchema = false)
+@Database(entities = [ImageModel::class, UserInfoModel::class], version = 9, exportSchema = false)
 abstract class UserDatabase: RoomDatabase() {
     abstract val imageDAO: ImageDAO
     abstract val userDAO: UserDAO

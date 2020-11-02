@@ -3,7 +3,6 @@
 package com.example.socialmediaappv2.upload
 
 import android.Manifest
-import android.R.attr
 import android.annotation.SuppressLint
 import android.content.ContentResolver
 import android.content.ContentValues
@@ -13,6 +12,7 @@ import android.graphics.ImageFormat
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.*
 import android.hardware.camera2.CameraCaptureSession.CaptureCallback
+import android.media.ExifInterface
 import android.media.Image
 import android.media.ImageReader
 import android.media.MediaScannerConnection
@@ -35,9 +35,7 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import kotlinx.android.synthetic.main.activity_camera2.*
 import kotlinx.coroutines.runBlocking
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
+import java.io.*
 import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.*
@@ -49,7 +47,9 @@ private const val GET_LAT_LONG = "GETLATLONG"
 internal lateinit var presenter: Contract.UserInfoPresenter
 private lateinit var fusedLocationClient: FusedLocationProviderClient
 
-//TODO fix rotation, add zoom, add focus on tap
+//TODO add zoom, add focus on tap, make a new layout for landscape and possibly find a better solution to orientation, front facing camera switches to back facing camera on orientation change
+
+//the number is 228
 
 
 class Camera2Activity : AppCompatActivity(), Contract.MainView {
@@ -73,6 +73,8 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
     private var mBackgroundThread: HandlerThread? = null
 
     private lateinit var sharedPref: SharedPreference
+
+    private var camera = 0 //0 is for back 1 is for front
 
     private class ImageSaver(val mImage: Image, val mFile: File): Runnable {
         override fun run() {
@@ -106,10 +108,10 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_camera2)
 
-        orientations.append(Surface.ROTATION_0, 0)
-        orientations.append(Surface.ROTATION_90, 90)
-        orientations.append(Surface.ROTATION_180, 180)
-        orientations.append(Surface.ROTATION_270, 270)
+        orientations.append(Surface.ROTATION_0, 90)
+        orientations.append(Surface.ROTATION_90, 0)
+        orientations.append(Surface.ROTATION_180, 270)
+        orientations.append(Surface.ROTATION_270, 180)
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         sharedPref = SharedPreference(this)
@@ -123,14 +125,20 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
         textureView.surfaceTextureListener = textureListener
         disableButtons()
         takePictureButton.setOnClickListener { takePicture() }
-        backButton.setOnClickListener { closeCamera() }
+        backButton.setOnClickListener {
+            closeCamera()
+            finish()
+        }
+        swapButton.setOnClickListener {
+            closeCamera()
+            openCamera(if (camera == 0) 1 else 0)
+            camera = if (camera == 0) 1 else 0
+        }
     }
-
-
 
     private var textureListener: SurfaceTextureListener = object : SurfaceTextureListener {
         override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
-            openCamera()
+            openCamera(camera)
         }
 
         override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {
@@ -143,6 +151,7 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
 
         override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {}
     }
+
     private val stateCallback: CameraDevice.StateCallback = object : CameraDevice.StateCallback() {
         override fun onOpened(camera: CameraDevice) {
             Log.e(tag, "onOpened")
@@ -208,7 +217,7 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
             outputSurfaces.add(reader.surface)
             outputSurfaces.add(Surface(textureView.surfaceTexture))
             val captureBuilder: CaptureRequest.Builder =
-                cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
+                cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE) // *
             captureBuilder.addTarget(reader.surface)
             captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO)
             // Orientation
@@ -248,7 +257,7 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
                     val cr: ContentResolver = applicationContext.contentResolver
                     cr.insert(Media.EXTERNAL_CONTENT_URI, values)
                     mBackgroundHandler!!.post(ImageSaver(it.acquireNextImage(), mFile))
-                    presenter.addPost(mFile.absolutePath, doubleArrayOf(lat, long), this)
+                    presenter.addPost(mFile.absolutePath,if (camera == 0) 1 + rotation else -1 - rotation, doubleArrayOf(lat, long), this)
                 }
             reader.setOnImageAvailableListener(readerListener, mBackgroundHandler)
             val captureListener: CaptureCallback = object : CaptureCallback() {
@@ -320,11 +329,11 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
         }
     }
 
-    private fun openCamera() {
+    private fun openCamera(id: Int) {
         val manager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
         Log.e(tag, "is camera open")
         try {
-            cameraId = manager.cameraIdList[0]
+            cameraId = manager.cameraIdList[id]
             val characteristics = manager.getCameraCharacteristics(cameraId as String)
             val map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)!!
             imageDimension = map.getOutputSizes(SurfaceTexture::class.java)[0]
@@ -375,7 +384,6 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
             imageReader!!.close()
             imageReader = null
         }
-        finish()
     }
 
     override fun onRequestPermissionsResult(
@@ -401,7 +409,7 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
         Log.e(tag, "onResume")
         startBackgroundThread()
         if (textureView.isAvailable) {
-            openCamera()
+            openCamera(camera)
         } else {
             textureView.surfaceTextureListener = textureListener
         }
@@ -444,7 +452,10 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
             if (it != null) {
                 lat = it.latitude
                 long = it.longitude
-                Log.e(GET_LAT_LONG, "Successful fetch. Coordinates are: ${it.latitude} ${it.longitude}.")
+                Log.e(
+                    GET_LAT_LONG,
+                    "Successful fetch. Coordinates are: ${it.latitude} ${it.longitude}."
+                )
             }
         }
         return true

@@ -27,5 +27,8 @@ data class ImageModel(
     val latitude: Double,
 
     @ColumnInfo(name = "longitude")
-    val longitude: Double
+    val longitude: Double,
+
+    @ColumnInfo(name = "rotation")
+    val rotation: Int
 )

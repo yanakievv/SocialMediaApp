@@ -53,7 +53,7 @@ class UserInfoPresenter(var view: Contract.MainView?): Contract.UserInfoPresente
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    override fun addPost(newPost: String, latLong: DoubleArray, context: Context) {
+    override fun addPost(newPost: String, rotation: Int, latLong: DoubleArray, context: Context) {
         val formatted = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"))
         CoroutineScope(Dispatchers.IO).launch {
             imageDao.addImage(
@@ -64,7 +64,8 @@ class UserInfoPresenter(var view: Contract.MainView?): Contract.UserInfoPresente
                     userInfo.displayName,
                     formatted,
                     latLong[0],
-                    latLong[1]
+                    latLong[1],
+                    rotation
                 )
             )
         }
