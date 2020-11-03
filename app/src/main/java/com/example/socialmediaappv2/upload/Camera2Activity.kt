@@ -4,15 +4,15 @@ package com.example.socialmediaappv2.upload
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.ContentResolver
 import android.content.ContentValues
 import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.ImageFormat
-import android.graphics.SurfaceTexture
+import android.graphics.*
 import android.hardware.camera2.*
 import android.hardware.camera2.CameraCaptureSession.CaptureCallback
-import android.media.ExifInterface
+import android.hardware.camera2.params.MeteringRectangle
 import android.media.Image
 import android.media.ImageReader
 import android.media.MediaScannerConnection
@@ -21,12 +21,16 @@ import android.provider.MediaStore.Images.Media
 import android.util.Log
 import android.util.Size
 import android.util.SparseIntArray
+import android.view.MotionEvent
 import android.view.Surface
 import android.view.TextureView.SurfaceTextureListener
+import android.view.View
+import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.math.MathUtils
 import com.example.socialmediaappv2.R
 import com.example.socialmediaappv2.UserInfoPresenter
 import com.example.socialmediaappv2.contract.Contract
@@ -35,11 +39,14 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import kotlinx.android.synthetic.main.activity_camera2.*
 import kotlinx.coroutines.runBlocking
-import java.io.*
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.math.roundToInt
 
 
 private const val REQUEST_CAMERA_PERMISSION = 200
@@ -47,9 +54,8 @@ private const val GET_LAT_LONG = "GETLATLONG"
 internal lateinit var presenter: Contract.UserInfoPresenter
 private lateinit var fusedLocationClient: FusedLocationProviderClient
 
-//TODO add zoom, add focus on tap, make a new layout for landscape and possibly find a better solution to orientation, front facing camera switches to back facing camera on orientation change
+//TODO add focus on tap, make a new layout for landscape
 
-//the number is 228
 
 
 class Camera2Activity : AppCompatActivity(), Contract.MainView {
@@ -75,6 +81,10 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
     private lateinit var sharedPref: SharedPreference
 
     private var camera = 0 //0 is for back 1 is for front
+
+    var finger_spacing = 0F
+    var zoom_level = 1F
+    var manualFocusEngaged = false
 
     private class ImageSaver(val mImage: Image, val mFile: File): Runnable {
         override fun run() {
@@ -134,9 +144,79 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
             openCamera(if (camera == 0) 1 else 0)
             camera = if (camera == 0) 1 else 0
         }
+        textureView.setOnTouchListener(object : View.OnTouchListener {
+            override fun onTouch(v: View?, event: MotionEvent): Boolean {
+                try {
+                    val activity: Activity? = this@Camera2Activity
+                    val manager = activity!!.getSystemService(CAMERA_SERVICE) as CameraManager
+                    val characteristics = manager.getCameraCharacteristics(cameraId!!)
+                    val maxZoom =
+                        characteristics[CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM]!! //for LGE LM-G710 its 8.0
+                    val action: Int = event.action
+                    val currentFingerSpacing: Float
+                    if (event.pointerCount > 1) {
+                        currentFingerSpacing = getFingerSpacing(event)
+                        if (finger_spacing != 0F) {
+                            if (currentFingerSpacing > finger_spacing && maxZoom > zoom_level) {
+                                zoom_level += .05F
+                            } else if (currentFingerSpacing < finger_spacing && zoom_level > 1) {
+                                zoom_level -= .05F
+                                if (zoom_level < 1) zoom_level = 1F
+                            }
+                            val matrix: Matrix = Matrix()
+                            matrix.setScale(
+                                zoom_level,
+                                zoom_level,
+                                textureView.width / 2F,
+                                textureView.height / 2F
+                            )
+                            textureView.setTransform(matrix)
+                        }
+                        finger_spacing = currentFingerSpacing
+                    } else {
+                        if (action == MotionEvent.ACTION_UP) {
+                            // code for tap to focus, tried a lot of things that didn't seem to work or were not working properly and reliably so I'll need to spend some more time on that.
+                            // for now there is auto focus which seems to work nice and IMO I wouldn't mind leaving it by itself
+                        }
+                    }
+                } catch (e: CameraAccessException) {
+                    throw RuntimeException("can not access camera.", e)
+                }
+                return true
+            }
+        })
+    }
+
+    private fun calculateFocusRect(x: Float, y: Float): MeteringRectangle? {
+        //Size of the Rectangle.
+        val areaSize = 50
+        val left: Int = clamp(x.toInt() - areaSize / 2, 0, textureView.width - areaSize)
+        val top: Int = clamp(y.toInt() - areaSize / 2, 0, textureView.height - areaSize)
+        val rectF = RectF(
+            left.toFloat(),
+            top.toFloat(),
+            (left + areaSize).toFloat(),
+            (top + areaSize).toFloat()
+        )
+        val focusRect = Rect(
+            rectF.left.roundToInt(),
+            rectF.top.roundToInt(), rectF.right.roundToInt(),
+            rectF.bottom.roundToInt()
+        )
+        return MeteringRectangle(focusRect, 1)
+    }
+
+    private fun clamp(x: Int, min: Int, max: Int): Int {
+        if (x > max) {
+            return max
+        }
+        return if (x < min) {
+            min
+        } else x
     }
 
     private var textureListener: SurfaceTextureListener = object : SurfaceTextureListener {
+
         override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
             openCamera(camera)
         }
@@ -219,9 +299,11 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
             val captureBuilder: CaptureRequest.Builder =
                 cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE) // *
             captureBuilder.addTarget(reader.surface)
+            Zoom(characteristics).setZoom(captureBuilder, zoom_level)
             captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO)
             // Orientation
-
+            Toast.makeText(this@Camera2Activity, "$zoom_level", Toast.LENGTH_SHORT)
+                .show()
             @Suppress("DEPRECATION") val rotation = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 applicationContext.display?.rotation
             } else {
@@ -257,7 +339,15 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
                     val cr: ContentResolver = applicationContext.contentResolver
                     cr.insert(Media.EXTERNAL_CONTENT_URI, values)
                     mBackgroundHandler!!.post(ImageSaver(it.acquireNextImage(), mFile))
-                    presenter.addPost(mFile.absolutePath,if (camera == 0) 1 + rotation else -1 - rotation, doubleArrayOf(lat, long), this)
+                    presenter.addPost(
+                        mFile.absolutePath,
+                        if (camera == 0) 1 + rotation else -1 - rotation,
+                        doubleArrayOf(
+                            lat,
+                            long
+                        ),
+                        this
+                    )
                 }
             reader.setOnImageAvailableListener(readerListener, mBackgroundHandler)
             val captureListener: CaptureCallback = object : CaptureCallback() {
@@ -460,4 +550,55 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
         }
         return true
     }
+    //Determine the space between the first two fingers
+    private fun getFingerSpacing(event: MotionEvent): Float {
+        val x: Float = event.getX(0) - event.getX(1)
+        val y: Float = event.getY(0) - event.getY(1)
+        return Math.sqrt(x * x + y * y.toDouble()).toFloat()
+    }
+
+    fun handleFocus(event: MotionEvent) {}
+
 }
+class Zoom(characteristics: CameraCharacteristics) {
+    private val mCropRegion: Rect = Rect()
+    var maxZoom: Float
+
+    private val mSensorSize: Rect? = characteristics[CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE]
+    var hasSupport: Boolean
+    fun setZoom(builder: CaptureRequest.Builder, zoom: Float) {
+        if (!hasSupport) {
+            return
+        }
+        val newZoom: Float = MathUtils.clamp(
+            zoom, DEFAULT_ZOOM_FACTOR,
+            maxZoom
+        )
+        val centerX: Int = mSensorSize!!.width() / 2
+        val centerY: Int = mSensorSize.height() / 2
+        val deltaX = (0.5f * mSensorSize.width() / newZoom).toInt()
+        val deltaY = (0.5f * mSensorSize.height() / newZoom).toInt()
+        mCropRegion.set(
+            centerX - deltaX,
+            centerY - deltaY,
+            centerX + deltaX,
+            centerY + deltaY
+        )
+        builder.set(CaptureRequest.SCALER_CROP_REGION, mCropRegion)
+    }
+
+    companion object {
+        private const val DEFAULT_ZOOM_FACTOR = 1.0f
+    }
+
+    init {
+        if (mSensorSize == null) {
+            maxZoom = DEFAULT_ZOOM_FACTOR
+            hasSupport = false
+        }
+        val value = characteristics[CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM]
+        maxZoom = if (value == null || value < DEFAULT_ZOOM_FACTOR) DEFAULT_ZOOM_FACTOR else value
+        hasSupport = maxZoom.compareTo(DEFAULT_ZOOM_FACTOR) > 0
+    }
+}
+
