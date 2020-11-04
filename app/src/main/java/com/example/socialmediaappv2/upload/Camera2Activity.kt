@@ -9,6 +9,7 @@ import android.content.ContentResolver
 import android.content.ContentValues
 import android.content.Context
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.graphics.*
 import android.hardware.camera2.*
 import android.hardware.camera2.CameraCaptureSession.CaptureCallback
@@ -25,7 +26,7 @@ import android.view.MotionEvent
 import android.view.Surface
 import android.view.TextureView.SurfaceTextureListener
 import android.view.View
-import android.widget.RelativeLayout
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -47,6 +48,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.roundToInt
+import kotlin.math.sqrt
 
 
 private const val REQUEST_CAMERA_PERMISSION = 200
@@ -85,6 +87,7 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
     var finger_spacing = 0F
     var zoom_level = 1F
     var manualFocusEngaged = false
+    var previewSize: Size? = null
 
     private class ImageSaver(val mImage: Image, val mFile: File): Runnable {
         override fun run() {
@@ -221,9 +224,7 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
             openCamera(camera)
         }
 
-        override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {
-            // Transform image size according to surface width and height
-        }
+        override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {}
 
         override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
             return false
@@ -302,8 +303,7 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
             Zoom(characteristics).setZoom(captureBuilder, zoom_level)
             captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO)
             // Orientation
-            Toast.makeText(this@Camera2Activity, "$zoom_level", Toast.LENGTH_SHORT)
-                .show()
+            //Toast.makeText(this@Camera2Activity, "$zoom_level", Toast.LENGTH_SHORT).show()
             @Suppress("DEPRECATION") val rotation = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 applicationContext.display?.rotation
             } else {
@@ -348,6 +348,8 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
                         ),
                         this
                     )
+                    sharedPref.save("lat", lat.toString())
+                    sharedPref.save("long", long.toString())
                 }
             reader.setOnImageAvailableListener(readerListener, mBackgroundHandler)
             val captureListener: CaptureCallback = object : CaptureCallback() {
@@ -502,12 +504,15 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
             openCamera(camera)
         } else {
             textureView.surfaceTextureListener = textureListener
+            textureView.rotation = getRotation(this@Camera2Activity)!!
+            //Toast.makeText(this@Camera2Activity, getRotation(this@Camera2Activity).toString(), Toast.LENGTH_SHORT).show()
+
         }
     }
 
     override fun onPause() {
         Log.e(tag, "onPause")
-        //closeCamera()
+        closeCamera()
         stopBackgroundThread()
         super.onPause()
     }
@@ -554,11 +559,18 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
     private fun getFingerSpacing(event: MotionEvent): Float {
         val x: Float = event.getX(0) - event.getX(1)
         val y: Float = event.getY(0) - event.getY(1)
-        return Math.sqrt(x * x + y * y.toDouble()).toFloat()
+        return sqrt(x * x + y * y.toDouble()).toFloat()
     }
-
-    fun handleFocus(event: MotionEvent) {}
-
+    private fun getRotation(context: Context): Float? {
+        val rotation: Int =
+            (context.getSystemService(WINDOW_SERVICE) as WindowManager).defaultDisplay.orientation
+        return when (rotation) {
+            Surface.ROTATION_0 -> 0F
+            Surface.ROTATION_90 -> 270F
+            Surface.ROTATION_180 -> 180F
+            else -> 90F
+        }
+    }
 }
 class Zoom(characteristics: CameraCharacteristics) {
     private val mCropRegion: Rect = Rect()

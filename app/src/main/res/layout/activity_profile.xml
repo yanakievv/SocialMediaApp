@@ -153,7 +153,7 @@
         android:layout_width="128dp"
         android:layout_height="128dp"
         android:layout_marginStart="50dp"
-        android:layout_marginTop="0dp"
+        android:layout_marginTop="50dp"
         android:layout_marginEnd="250dp"
         android:layout_marginBottom="350dp"
         android:adjustViewBounds="false"

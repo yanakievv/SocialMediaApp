@@ -51,4 +51,6 @@ class ExploreActivity : AppCompatActivity() {
             startActivity(Intent(this, ExploreActivity::class.java))
         }
     }
+
+    fun displayFragment() {}
 }

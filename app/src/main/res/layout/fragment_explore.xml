@@ -29,13 +29,13 @@
 
         <ImageView
             android:id="@+id/explore_item_image_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="415dp"
+            android:layout_height="415dp"
             android:contentDescription="@string/app_name"
             android:scaleType="centerInside"
             android:padding="10dp"
-            android:layout_marginTop="-350dp"
-            android:layout_marginBottom="-300dp"/>
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="50dp"/>
 
 
 

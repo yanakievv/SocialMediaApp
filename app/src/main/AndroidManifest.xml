@@ -29,7 +29,7 @@
             android:name=".explore.ExploreActivity"
             android:label="@string/title_activity_explore"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".upload.Camera2Activity" />
+        <activity android:name=".upload.Camera2Activity"/>
         <activity
             android:name=".profile.ProfileActivity"
             android:windowSoftInputMode="adjustPan" />
