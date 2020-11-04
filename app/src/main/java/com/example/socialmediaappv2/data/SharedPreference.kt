@@ -17,8 +17,18 @@ class SharedPreference(val context: Context) {
             editor.apply()
         }
 
+        fun save(key: String, value: Int) {
+            val editor: SharedPreferences.Editor = sharedPref.edit()
+            editor.putInt(key, value)
+            editor.apply()
+        }
+
         fun getString(key: String): String? {
             return sharedPref.getString(key, null)
+        }
+
+        fun getInt(key: String): Int {
+            return sharedPref.getInt(key, 0)
         }
 
         fun clearData() {

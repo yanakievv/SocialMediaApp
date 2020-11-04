@@ -56,7 +56,7 @@ private const val GET_LAT_LONG = "GETLATLONG"
 internal lateinit var presenter: Contract.UserInfoPresenter
 private lateinit var fusedLocationClient: FusedLocationProviderClient
 
-//TODO add focus on tap, make a new layout for landscape
+//TODO add focus on tap, flash
 
 
 
@@ -146,8 +146,10 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
             closeCamera()
             openCamera(if (camera == 0) 1 else 0)
             camera = if (camera == 0) 1 else 0
+            sharedPref.save("orientation", camera)
         }
         textureView.setOnTouchListener(object : View.OnTouchListener {
+            @SuppressLint("ClickableViewAccessibility")
             override fun onTouch(v: View?, event: MotionEvent): Boolean {
                 try {
                     val activity: Activity? = this@Camera2Activity
@@ -166,7 +168,7 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
                                 zoom_level -= .05F
                                 if (zoom_level < 1) zoom_level = 1F
                             }
-                            val matrix: Matrix = Matrix()
+                            val matrix = Matrix()
                             matrix.setScale(
                                 zoom_level,
                                 zoom_level,
@@ -499,6 +501,7 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
     override fun onResume() {
         super.onResume()
         Log.e(tag, "onResume")
+        camera = sharedPref.getInt("orientation")
         startBackgroundThread()
         if (textureView.isAvailable) {
             openCamera(camera)
@@ -506,7 +509,6 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
             textureView.surfaceTextureListener = textureListener
             textureView.rotation = getRotation(this@Camera2Activity)!!
             //Toast.makeText(this@Camera2Activity, getRotation(this@Camera2Activity).toString(), Toast.LENGTH_SHORT).show()
-
         }
     }
 
