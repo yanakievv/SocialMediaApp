@@ -2,6 +2,7 @@ package com.example.socialmediaappv2.explore
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.example.socialmediaappv2.R
@@ -52,5 +53,7 @@ class ExploreActivity : AppCompatActivity() {
         }
     }
 
-    fun displayFragment() {}
+    fun displayFragment() {
+
+    }
 }

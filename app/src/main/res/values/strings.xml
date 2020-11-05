@@ -34,4 +34,7 @@
     <string name="preview">Preview</string>
     <string name="visit_profile">Visit publisher profile</string>
     <string name="view_posts">View Posts</string>
+    <string name="bottomcamerabar">bottomCameraBar</string>
+    <string name="backbutton">backButton</string>
+    <string name="swapbutton">swapButton</string>
 </resources>

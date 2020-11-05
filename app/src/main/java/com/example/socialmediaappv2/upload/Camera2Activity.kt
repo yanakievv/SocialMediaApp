@@ -31,6 +31,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.math.MathUtils
 import com.example.socialmediaappv2.R
 import com.example.socialmediaappv2.UserInfoPresenter
@@ -83,6 +84,7 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
     private lateinit var sharedPref: SharedPreference
 
     private var camera = 0 //0 is for back 1 is for front
+    private var flash: Boolean = false
 
     var finger_spacing = 0F
     var zoom_level = 1F
@@ -147,6 +149,12 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
             openCamera(if (camera == 0) 1 else 0)
             camera = if (camera == 0) 1 else 0
             sharedPref.save("orientation", camera)
+            updateFlashButton(camera == 0)
+        }
+        flashButton.setOnClickListener {
+            flash = !flash
+            updateFlashButton(true)
+            sharedPref.save("flash", flash)
         }
         textureView.setOnTouchListener(object : View.OnTouchListener {
             @SuppressLint("ClickableViewAccessibility")
@@ -193,7 +201,6 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
     }
 
     private fun calculateFocusRect(x: Float, y: Float): MeteringRectangle? {
-        //Size of the Rectangle.
         val areaSize = 50
         val left: Int = clamp(x.toInt() - areaSize / 2, 0, textureView.width - areaSize)
         val top: Int = clamp(y.toInt() - areaSize / 2, 0, textureView.height - areaSize)
@@ -303,6 +310,7 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
                 cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE) // *
             captureBuilder.addTarget(reader.surface)
             Zoom(characteristics).setZoom(captureBuilder, zoom_level)
+            if (flash && camera == 0) captureBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE)
             captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO)
             // Orientation
             //Toast.makeText(this@Camera2Activity, "$zoom_level", Toast.LENGTH_SHORT).show()
@@ -391,7 +399,6 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
 
     private fun createCameraPreview() {
         try {
-            setPresenter(UserInfoPresenter(this))
             val texture: SurfaceTexture = textureView.surfaceTexture!!
             texture.setDefaultBufferSize(imageDimension!!.width, imageDimension!!.height)
             val surface = Surface(texture)
@@ -502,6 +509,8 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
         super.onResume()
         Log.e(tag, "onResume")
         camera = sharedPref.getInt("orientation")
+        flash = sharedPref.getBoolean("flash")
+        updateFlashButton(camera == 0)
         startBackgroundThread()
         if (textureView.isAvailable) {
             openCamera(camera)
@@ -557,12 +566,14 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
         }
         return true
     }
+
     //Determine the space between the first two fingers
     private fun getFingerSpacing(event: MotionEvent): Float {
         val x: Float = event.getX(0) - event.getX(1)
         val y: Float = event.getY(0) - event.getY(1)
         return sqrt(x * x + y * y.toDouble()).toFloat()
     }
+
     private fun getRotation(context: Context): Float? {
         val rotation: Int =
             (context.getSystemService(WINDOW_SERVICE) as WindowManager).defaultDisplay.orientation
@@ -572,6 +583,28 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
             Surface.ROTATION_180 -> 180F
             else -> 90F
         }
+    }
+
+    private fun updateFlashButton(visible: Boolean) { //hide the flash button when using front facing camera
+        if (visible) {
+            flashButton.visibility = View.VISIBLE
+            if (flash) {
+                flashButton.setImageDrawable(
+                    ContextCompat.getDrawable(
+                        applicationContext,
+                        R.drawable.ic_baseline_flash_on_48
+                    )
+                )
+            } else {
+                flashButton.setImageDrawable(
+                    ContextCompat.getDrawable(
+                        applicationContext,
+                        R.drawable.ic_baseline_flash_off_48
+                    )
+                )
+            }
+        }
+        else flashButton.visibility = View.INVISIBLE
     }
 }
 class Zoom(characteristics: CameraCharacteristics) {

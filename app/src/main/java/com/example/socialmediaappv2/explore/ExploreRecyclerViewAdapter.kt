@@ -59,6 +59,7 @@ class ExploreRecyclerViewAdapter(
                     popup.setOnMenuItemClickListener { item ->
                         when (item.itemId) {
                             R.id.preview_image -> {
+                                (context as ExploreActivity).displayFragment()
                                 true
                             }
                             R.id.visit_profile -> {
