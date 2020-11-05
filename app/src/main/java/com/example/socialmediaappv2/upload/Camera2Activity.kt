@@ -9,7 +9,6 @@ import android.content.ContentResolver
 import android.content.ContentValues
 import android.content.Context
 import android.content.pm.PackageManager
-import android.content.res.Configuration
 import android.graphics.*
 import android.hardware.camera2.*
 import android.hardware.camera2.CameraCaptureSession.CaptureCallback
@@ -22,11 +21,8 @@ import android.provider.MediaStore.Images.Media
 import android.util.Log
 import android.util.Size
 import android.util.SparseIntArray
-import android.view.MotionEvent
-import android.view.Surface
+import android.view.*
 import android.view.TextureView.SurfaceTextureListener
-import android.view.View
-import android.view.WindowManager
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -42,6 +38,7 @@ import com.google.android.gms.location.LocationServices
 import kotlinx.android.synthetic.main.activity_camera2.*
 import kotlinx.coroutines.runBlocking
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
 import java.nio.ByteBuffer
@@ -88,10 +85,8 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
 
     var finger_spacing = 0F
     var zoom_level = 1F
-    var manualFocusEngaged = false
-    var previewSize: Size? = null
 
-    private class ImageSaver(val mImage: Image, val mFile: File): Runnable {
+    private class ImageSaver(val mImage: Image, val mFile: File,val angle: Float): Runnable {
         override fun run() {
             val buffer: ByteBuffer = mImage.planes[0].buffer
             val bytes = ByteArray(buffer.remaining())
@@ -111,16 +106,40 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
                         e.printStackTrace()
                     }
                 }
+                rotateImage(mFile, angle)
             }
         }
+        private fun rotateImage(tempPhoto: File, angle: Float) {
+            val photoPath: String = tempPhoto.path.toString()
+            var bmp = BitmapFactory.decodeFile(photoPath)
 
+            val matrix = Matrix()
+            matrix.postRotate(angle)
+            bmp = Bitmap.createBitmap(bmp, 0, 0, bmp.width, bmp.height, matrix, true)
+
+            val fOut: FileOutputStream
+            try {
+                fOut = FileOutputStream(tempPhoto)
+                bmp.compress(Bitmap.CompressFormat.JPEG, 85, fOut)
+                fOut.flush()
+                fOut.close()
+            } catch (e1: FileNotFoundException) {
+                e1.printStackTrace()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
     }
+
+
 
 
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
         setContentView(R.layout.activity_camera2)
 
         orientations.append(Surface.ROTATION_0, 90)
@@ -310,7 +329,10 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
                 cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE) // *
             captureBuilder.addTarget(reader.surface)
             Zoom(characteristics).setZoom(captureBuilder, zoom_level)
-            if (flash && camera == 0) captureBuilder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE)
+            if (flash && camera == 0) captureBuilder.set(
+                CaptureRequest.FLASH_MODE,
+                CaptureRequest.FLASH_MODE_SINGLE
+            )
             captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO)
             // Orientation
             //Toast.makeText(this@Camera2Activity, "$zoom_level", Toast.LENGTH_SHORT).show()
@@ -323,6 +345,14 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
             val readerListener: ImageReader.OnImageAvailableListener =
                 ImageReader.OnImageAvailableListener {
                     SharedPreference.imagesTaken++
+                    var angle: Float = 0F
+                    angle =
+                        if (camera == 1 && getRotation(this@Camera2Activity) == 0F) {
+                            270F + getRotation(this@Camera2Activity)!!
+                        }
+                        else {
+                            90F + getRotation(this@Camera2Activity)!!
+                        }
                     val pathD = getExternalFilesDir(null)
                         .toString() + "/" + Environment.DIRECTORY_DCIM + "/"
                     val mediaStorageDir = File(pathD, "MyAlbum")
@@ -348,7 +378,7 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
 
                     val cr: ContentResolver = applicationContext.contentResolver
                     cr.insert(Media.EXTERNAL_CONTENT_URI, values)
-                    mBackgroundHandler!!.post(ImageSaver(it.acquireNextImage(), mFile))
+                    mBackgroundHandler!!.post(ImageSaver(it.acquireNextImage(), mFile, angle))
                     presenter.addPost(
                         mFile.absolutePath,
                         if (camera == 0) 1 + rotation else -1 - rotation,

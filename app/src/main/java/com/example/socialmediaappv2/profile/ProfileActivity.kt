@@ -102,16 +102,6 @@ class ProfileActivity : AppCompatActivity(), Contract.ProfileView {
         presenter.reInit(sharedPref.getString("publisherId")!!)
         val img = presenter.getProfilePic()
         profilePicture.setImageBitmap(BitmapFactory.decodeFile(img?.image))
-        when (img?.rotation) {
-            -4 -> profilePicture.rotation = 180F
-            -3 -> profilePicture.rotation = 90F
-            -2 -> profilePicture.rotation = 0F
-            -1 -> profilePicture.rotation = 270F
-            1 -> profilePicture.rotation = 90F
-            2 -> profilePicture.rotation = 0F
-            3 -> profilePicture.rotation = 270F
-            4 -> profilePicture.rotation = 180F
-        }
         displayName.text = presenter.getDisplayName()
         posts.text = "Posts: " + presenter.getNumberOfPosts()
         birthDate.text = "Born: " + presenter.getBirthDate()

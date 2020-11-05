@@ -6,15 +6,21 @@ import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
+import com.example.socialmediaappv2.PreviewImageFragment
 import com.example.socialmediaappv2.R
+import com.example.socialmediaappv2.data.ImageModel
 import com.example.socialmediaappv2.data.SharedPreference
 import com.example.socialmediaappv2.explore.ExploreActivity
 import com.example.socialmediaappv2.home.content.PublisherPictureContent
 import com.example.socialmediaappv2.profile.ProfileActivity
 import com.example.socialmediaappv2.upload.Camera2Activity
-import com.example.socialmediaappv2.upload.presenter
 import com.google.android.material.appbar.CollapsingToolbarLayout
-import kotlinx.android.synthetic.main.activity_home.*
+import kotlinx.android.synthetic.main.activity_home.explore_button
+import kotlinx.android.synthetic.main.activity_home.fab
+import kotlinx.android.synthetic.main.activity_home.fragment_container
+import kotlinx.android.synthetic.main.activity_home.home_button
+import kotlinx.android.synthetic.main.activity_home.profile_button
+import kotlinx.android.synthetic.main.activity_home.upload_button
 import kotlinx.android.synthetic.main.content_home_scrolling.*
 
 internal lateinit var sharedPref: SharedPreference
@@ -84,6 +90,13 @@ class HomeActivity : AppCompatActivity() {
             PublisherPictureContent.loadRecentImages(sharedPref.getString("publisherId")!!, this)
         }
         recyclerViewAdapter?.notifyDataSetChanged()
+    }
+
+    fun displayFragment(image: ImageModel) {
+        val previewImageFragment = PreviewImageFragment(image)
+        val fragmentManager = supportFragmentManager
+        val fragmentTransaction = fragmentManager.beginTransaction()
+        fragmentTransaction.add(fragment_container.id, previewImageFragment).commit()
     }
 
 }

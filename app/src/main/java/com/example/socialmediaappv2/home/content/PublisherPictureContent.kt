@@ -27,6 +27,13 @@ object PublisherPictureContent {
     private var isCurrentUser: Boolean = false
 
 
+    private fun reinitUserInfo() {
+        CoroutineScope(Dispatchers.IO).launch {
+            userInfo = userDao.getUser(sharedPref.getString("publisherId")!!)
+        }
+    }
+
+
     fun initLoadImagesFromDatabase(userId: String, context: Context) {
         Log.e("LOAD_FROM_USER", userId)
 
@@ -56,6 +63,8 @@ object PublisherPictureContent {
     }
 
     fun loadRecentImages(userId: String, context: Context) {
+
+        reinitUserInfo()
         if (SharedPreference.imagesTaken > 0 && isCurrentUser) {
             runBlocking {
                 addImages(

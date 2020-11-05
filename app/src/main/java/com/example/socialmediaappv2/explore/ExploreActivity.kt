@@ -2,17 +2,22 @@ package com.example.socialmediaappv2.explore
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
+import com.example.socialmediaappv2.PreviewImageFragment
 import com.example.socialmediaappv2.R
+import com.example.socialmediaappv2.data.ImageModel
 import com.example.socialmediaappv2.explore.content.PublicPictureContent
 import com.example.socialmediaappv2.home.HomeActivity
 import com.example.socialmediaappv2.profile.ProfileActivity
 import com.example.socialmediaappv2.upload.Camera2Activity
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import kotlinx.android.synthetic.main.activity_explore.*
+import kotlinx.android.synthetic.main.activity_explore.explore_button
+import kotlinx.android.synthetic.main.activity_explore.fragment_container
+import kotlinx.android.synthetic.main.activity_explore.home_button
+import kotlinx.android.synthetic.main.activity_explore.profile_button
+import kotlinx.android.synthetic.main.activity_explore.upload_button
 import kotlinx.android.synthetic.main.content_explore_scrolling.*
 
 class ExploreActivity : AppCompatActivity() {
@@ -53,7 +58,11 @@ class ExploreActivity : AppCompatActivity() {
         }
     }
 
-    fun displayFragment() {
+    fun displayFragment(image: ImageModel) {
+        val previewImageFragment = PreviewImageFragment(image)
+        val fragmentManager = supportFragmentManager
+        val fragmentTransaction = fragmentManager.beginTransaction()
+        fragmentTransaction.add(fragment_container.id, previewImageFragment).commit()
 
     }
 }
