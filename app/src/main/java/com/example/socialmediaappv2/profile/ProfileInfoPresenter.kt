@@ -35,7 +35,6 @@ class ProfileInfoPresenter(var view: Contract.ProfileView?): Contract.ProfileInf
     override fun refreshDb() {
         if (isCurrentUser) {
             runBlocking{ userDao.updateUser(userInfo) }
-            sharedPref.clearData()
             sharedPref.save("publisherId", userInfo.publisherId)
             sharedPref.save("displayName", userInfo.displayName)
             sharedPref.save("birthDate", userInfo.birthDate)
@@ -81,7 +80,7 @@ class ProfileInfoPresenter(var view: Contract.ProfileView?): Contract.ProfileInf
 
     override fun getNumberOfPosts(): Int {
         var num = 0
-        runBlocking { num = imageDao.getPublisherPosts(userInfo.publisherId).size}
+        runBlocking { num = imageDao.getNumberOfPosts(userInfo.publisherId)}
         return num
     }
 

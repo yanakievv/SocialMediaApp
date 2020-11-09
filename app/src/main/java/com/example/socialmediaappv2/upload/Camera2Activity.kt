@@ -86,7 +86,7 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
     var finger_spacing = 0F
     var zoom_level = 1F
 
-    private class ImageSaver(val mImage: Image, val mFile: File,val angle: Float): Runnable {
+    private class ImageSaver(val mImage: Image, val mFile: File, val angle: Float): Runnable {
         override fun run() {
             val buffer: ByteBuffer = mImage.planes[0].buffer
             val bytes = ByteArray(buffer.remaining())
@@ -138,8 +138,11 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
+        requestWindowFeature(Window.FEATURE_NO_TITLE)
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            WindowManager.LayoutParams.FLAG_FULLSCREEN
+        )
         setContentView(R.layout.activity_camera2)
 
         orientations.append(Surface.ROTATION_0, 90)
@@ -207,8 +210,7 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
                         finger_spacing = currentFingerSpacing
                     } else {
                         if (action == MotionEvent.ACTION_UP) {
-                            // code for tap to focus, tried a lot of things that didn't seem to work or were not working properly and reliably so I'll need to spend some more time on that.
-                            // for now there is auto focus which seems to work nice and IMO I wouldn't mind leaving it by itself
+                            // end of tap
                         }
                     }
                 } catch (e: CameraAccessException) {
@@ -335,7 +337,6 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
             )
             captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO)
             // Orientation
-            //Toast.makeText(this@Camera2Activity, "$zoom_level", Toast.LENGTH_SHORT).show()
             @Suppress("DEPRECATION") val rotation = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 applicationContext.display?.rotation
             } else {
@@ -345,8 +346,7 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
             val readerListener: ImageReader.OnImageAvailableListener =
                 ImageReader.OnImageAvailableListener {
                     SharedPreference.imagesTaken++
-                    var angle: Float = 0F
-                    angle =
+                    val angle =
                         if (camera == 1 && getRotation(this@Camera2Activity) == 0F) {
                             270F + getRotation(this@Camera2Activity)!!
                         }
@@ -367,8 +367,6 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
 
                     val values = ContentValues()
                     values.put(Media.TITLE, "ImageName")
-                    //values.put(Media.DATE_TAKEN, System.currentTimeMillis())
-                    //values.put(Media.ORIENTATION, orientations.get(attr.rotation))
                     values.put(Media.CONTENT_TYPE, "image/jpeg")
                     values.put("_data", mFile.absolutePath)
                     MediaScannerConnection.scanFile(
@@ -614,7 +612,6 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
             else -> 90F
         }
     }
-
     private fun updateFlashButton(visible: Boolean) { //hide the flash button when using front facing camera
         if (visible) {
             flashButton.visibility = View.VISIBLE

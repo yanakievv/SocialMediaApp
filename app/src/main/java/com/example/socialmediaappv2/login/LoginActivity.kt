@@ -141,7 +141,6 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
                     presenter.init(publisherId!!, publisherDisplayName!!, applicationContext)
 
                 }
-
                 val intent = Intent(this, HomeActivity::class.java)
                 startActivity(intent)
             }
@@ -214,7 +213,7 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
             if (it != null) {
                 sharedPref.save("lat", it.latitude.toString())
                 sharedPref.save("long", it.longitude.toString())
-                Log.e(GET_LAT_LONG, "Successful fetch. Coordinates are: ${it.latitude} ${it.longitude}.")
+                Log.e(GET_LAT_LONG, "Successful fetch. Coordinates are: ${sharedPref.getString("lat")} ${sharedPref.getString("long")}.")
             }
         }
         return true
