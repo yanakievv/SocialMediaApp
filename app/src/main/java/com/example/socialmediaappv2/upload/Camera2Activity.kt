@@ -54,9 +54,6 @@ private const val GET_LAT_LONG = "GETLATLONG"
 internal lateinit var presenter: Contract.UserInfoPresenter
 private lateinit var fusedLocationClient: FusedLocationProviderClient
 
-//TODO add focus on tap, flash
-
-
 
 class Camera2Activity : AppCompatActivity(), Contract.MainView {
 
@@ -83,8 +80,8 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
     private var camera = 0 //0 is for back 1 is for front
     private var flash: Boolean = false
 
-    var finger_spacing = 0F
-    var zoom_level = 1F
+    var fingeSpacing = 0F
+    var zoomLevel = 1F
 
     private class ImageSaver(val mImage: Image, val mFile: File, val angle: Float): Runnable {
         override fun run() {
@@ -191,23 +188,23 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
                     val currentFingerSpacing: Float
                     if (event.pointerCount > 1) {
                         currentFingerSpacing = getFingerSpacing(event)
-                        if (finger_spacing != 0F) {
-                            if (currentFingerSpacing > finger_spacing && maxZoom > zoom_level) {
-                                zoom_level += .05F
-                            } else if (currentFingerSpacing < finger_spacing && zoom_level > 1) {
-                                zoom_level -= .05F
-                                if (zoom_level < 1) zoom_level = 1F
+                        if (fingeSpacing != 0F) {
+                            if (currentFingerSpacing > fingeSpacing && maxZoom > zoomLevel) {
+                                zoomLevel += .05F
+                            } else if (currentFingerSpacing < fingeSpacing && zoomLevel > 1) {
+                                zoomLevel -= .05F
+                                if (zoomLevel < 1) zoomLevel = 1F
                             }
                             val matrix = Matrix()
                             matrix.setScale(
-                                zoom_level,
-                                zoom_level,
+                                zoomLevel,
+                                zoomLevel,
                                 textureView.width / 2F,
                                 textureView.height / 2F
                             )
                             textureView.setTransform(matrix)
                         }
-                        finger_spacing = currentFingerSpacing
+                        fingeSpacing = currentFingerSpacing
                     } else {
                         if (action == MotionEvent.ACTION_UP) {
                             // end of tap
@@ -330,7 +327,7 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
             val captureBuilder: CaptureRequest.Builder =
                 cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE) // *
             captureBuilder.addTarget(reader.surface)
-            Zoom(characteristics).setZoom(captureBuilder, zoom_level)
+            Zoom(characteristics).setZoom(captureBuilder, zoomLevel)
             if (flash && camera == 0) captureBuilder.set(
                 CaptureRequest.FLASH_MODE,
                 CaptureRequest.FLASH_MODE_SINGLE
@@ -548,6 +545,8 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
             //Toast.makeText(this@Camera2Activity, getRotation(this@Camera2Activity).toString(), Toast.LENGTH_SHORT).show()
         }
     }
+
+
 
     override fun onPause() {
         Log.e(tag, "onPause")

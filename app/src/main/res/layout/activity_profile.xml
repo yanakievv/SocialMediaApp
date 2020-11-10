@@ -100,12 +100,13 @@
         android:id="@+id/displayName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="100dp"
         android:textColor="#FFFFFF"
         android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/logo2"
+        app:layout_constraintTop_toTopOf="@+id/fragment_container"
         tools:text="Test Testovic" />
 
     <TextView
@@ -113,11 +114,12 @@
         android:layout_width="154dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="50dp"
+        android:layout_marginTop="75dp"
         android:layout_marginEnd="50dp"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/profilePicture"
-        app:layout_constraintTop_toTopOf="@+id/profilePicture"
+        app:layout_constraintTop_toBottomOf="@+id/displayName"
         tools:text="Born: DD-MM-YYYY" />
 
     <TextView
@@ -153,18 +155,15 @@
         android:layout_width="128dp"
         android:layout_height="128dp"
         android:layout_marginStart="50dp"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="75dp"
         android:layout_marginEnd="250dp"
-        android:layout_marginBottom="350dp"
         android:adjustViewBounds="false"
         android:contentDescription="@string/profile"
         android:scaleType="fitCenter"
-        app:layout_constraintBottom_toTopOf="@+id/bottom_app_bar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.51"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/displayName"
-        app:layout_constraintVertical_bias="0.406"
         tools:srcCompat="@tools:sample/avatars" />
 
     <TextView

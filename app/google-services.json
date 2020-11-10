@@ -1,42 +1,42 @@
 {
   "project_info": {
-    "project_number": "969097203513",
-    "firebase_url": "https://socialmediaappv2.firebaseio.com",
-    "project_id": "socialmediaappv2",
-    "storage_bucket": "socialmediaappv2.appspot.com"
+    "project_number": "455860432269",
+    "firebase_url": "https://socialmediaapp-63c32.firebaseio.com",
+    "project_id": "socialmediaapp-63c32",
+    "storage_bucket": "socialmediaapp-63c32.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:969097203513:android:32969bb55a1d758b8e62e8",
+        "mobilesdk_app_id": "1:455860432269:android:db76008b9d853d70cd21c4",
         "android_client_info": {
           "package_name": "com.example.socialmediaappv2"
         }
       },
       "oauth_client": [
         {
-          "client_id": "969097203513-c4q9l8oq9chnhdheodr7dolo3cuf914e.apps.googleusercontent.com",
+          "client_id": "455860432269-rj2i71emitmosoagvtf4nejggk3civs2.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.socialmediaappv2",
-            "certificate_hash": "f2785d041065e79a5da89a5e1f2a3f10c7402f8f"
+            "certificate_hash": "de402846fe7a4a28fd274d9a4aa2f4b14ac48583"
           }
         },
         {
-          "client_id": "969097203513-9nq4sf27lueut29aevqsk9ii68vd0ss8.apps.googleusercontent.com",
+          "client_id": "455860432269-ktrn5c8s3o2ptainbaglu67s4k4i58ce.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyA328H0YRAqPoFze9Lezdaa4Mvo206CBGI"
+          "current_key": "AIzaSyCOU22Fzr6O4nEKBKmh5zH8ysZTV-H-4lA"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "969097203513-m6ibvjdp9qnprdu7070q78k1h5alub6d.apps.googleusercontent.com",
+              "client_id": "455860432269-ktrn5c8s3o2ptainbaglu67s4k4i58ce.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

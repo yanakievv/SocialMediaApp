@@ -8,8 +8,10 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.example.socialmediaappv2.R
 import com.example.socialmediaappv2.UserInfoPresenter
 import com.example.socialmediaappv2.contract.Contract
@@ -24,12 +26,15 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.coroutines.runBlocking
+import pub.devrel.easypermissions.AfterPermissionGranted
+import pub.devrel.easypermissions.EasyPermissions
+
 
 private const val RC_SIGN_IN = 7
 private const val GET_LAT_LONG = "GETLATLONG"
+private const val ACC_TAG = "Logged as:"
 internal lateinit var presenter: Contract.UserInfoPresenter
 private lateinit var sharedPref: SharedPreference
 internal lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -112,7 +117,7 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
                                     oldProfile: Profile?,
                                     currentProfile: Profile
                                 ) {
-                                    Log.v("facebook - profile", currentProfile.firstName)
+                                    Log.e(ACC_TAG,"FB " + currentProfile.firstName + " " + currentProfile.id)
                                     profileTracker.stopTracking()
                                     updateUI(currentProfile)
                                 }
@@ -145,7 +150,7 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
                 startActivity(intent)
             }
             else {
-                Snackbar.make(continueButton, "For uploading and viewing others posts the app uses location services. You must enable location permissions for the app before continuing.", Snackbar.LENGTH_LONG).show()
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
             }
         }
     }
@@ -158,11 +163,26 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
         if (requestCode == RC_SIGN_IN && resultCode != 0) {
             val account = GoogleSignIn.getLastSignedInAccount(this)
             if (account != null) {
+                Log.e(ACC_TAG, "Google " + account.givenName + " " + account.id)
                 updateUI(account)
             }
         }
     }
 
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        when (requestCode) {
+            1 -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    if ((ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)) {
+                        continueButton.performClick()
+                    }
+                } else {
+                    Toast.makeText(this, "Location service is used for determining what posts you see in the explore menu.", Toast.LENGTH_SHORT).show()
+                }
+                return
+            }
+        }
+    }
 
     @SuppressLint("SetTextI18n")
     private fun updateUI(account: GoogleSignInAccount) { //Google
@@ -198,22 +218,22 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
     }
 
     private fun getLatLong(): Boolean {
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            Log.e(GET_LAT_LONG, "Permissions not granted.")
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED) {
             return false
         }
         fusedLocationClient.lastLocation.addOnSuccessListener {
             if (it != null) {
                 sharedPref.save("lat", it.latitude.toString())
                 sharedPref.save("long", it.longitude.toString())
-                Log.e(GET_LAT_LONG, "Successful fetch. Coordinates are: ${sharedPref.getString("lat")} ${sharedPref.getString("long")}.")
+                Log.e(
+                    GET_LAT_LONG,
+                    "Successful fetch. Coordinates are: ${sharedPref.getString("lat")} ${
+                        sharedPref.getString(
+                            "long"
+                        )
+                    }."
+                )
             }
         }
         return true
