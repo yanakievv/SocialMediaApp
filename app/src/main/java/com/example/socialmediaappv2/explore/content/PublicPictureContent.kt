@@ -14,6 +14,7 @@ object PublicPictureContent {
 
 
     var ITEMS: MutableList<ImageModel> = ArrayList()
+    var initLoaded = false
 
     private lateinit var sharedPref: SharedPreference
     private lateinit var userInfo: UserInfoModel
@@ -23,8 +24,14 @@ object PublicPictureContent {
 
     private var latLong: DoubleArray = doubleArrayOf(0.0, 0.0)
 
-
     fun init(radius: Double, context: Context) {
+        if (!initLoaded) {
+            initForce(radius, context)
+            initLoaded = true
+        }
+    }
+
+    fun initForce(radius: Double, context: Context) {
         Log.e("LOADFROM", "database_all_posts")
 
         sharedPref = SharedPreference(context)

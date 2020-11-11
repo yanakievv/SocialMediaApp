@@ -42,8 +42,8 @@ class ExploreActivity : AppCompatActivity() {
         }
 
         findViewById<FloatingActionButton>(R.id.fab).setOnClickListener {
-            finish()
-            startActivity(intent)
+            PublicPictureContent.initForce(50.0, this)
+            recyclerViewAdapter?.notifyDataSetChanged()
         }
         map_view.setOnClickListener {
             map_view.setTextColor(resources.getColor(R.color.colorBlack))
