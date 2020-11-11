@@ -7,43 +7,13 @@
     android:fitsSystemWindows="true"
     tools:context=".explore.ExploreActivity">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/app_bar"
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/app_bar_height"
-        android:fitsSystemWindows="true"
-        android:theme="@style/AppTheme.AppBarOverlay">
+        android:layout_height="match_parent"
+        tools:context=".explore.MapsActivity" />
 
-        <com.google.android.material.appbar.CollapsingToolbarLayout
-            android:id="@+id/toolbar_layout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:fitsSystemWindows="true"
-            app:contentScrim="?attr/colorPrimary"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed"
-            app:toolbarId="@+id/toolbar">
-
-            <androidx.appcompat.widget.Toolbar
-                android:id="@+id/toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                app:layout_collapseMode="pin"
-                app:popupTheme="@style/AppTheme.PopupOverlay" />
-
-        </com.google.android.material.appbar.CollapsingToolbarLayout>
-    </com.google.android.material.appbar.AppBarLayout>
-
-    <include layout="@layout/content_explore_scrolling" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/fab_margin"
-        app:layout_anchor="@id/app_bar"
-        app:backgroundTint="@color/colorPrimary"
-        app:layout_anchorGravity="bottom|end"
-        app:srcCompat="@drawable/ic_baseline_refresh_24" />
     <com.google.android.material.bottomappbar.BottomAppBar
         android:id="@+id/bottom_app_bar"
         android:layout_width="match_parent"
@@ -122,19 +92,6 @@
 
     </com.google.android.material.bottomappbar.BottomAppBar>
 
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/fragment_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:elevation="10dp"
-        app:layout_constraintBottom_toTopOf="@+id/bottom_app_bar"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.516"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0"
-        tools:layout="@layout/fragment_preview_image" />
-
     <com.google.android.material.button.MaterialButtonToggleGroup
         android:id="@+id/toggleButton"
         android:layout_width="wrap_content"
@@ -147,13 +104,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Image View"
+            android:textColor="@color/colorBlack"
             style="?attr/materialButtonOutlinedStyle"/>
         <Button
             android:id="@+id/map_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Map View"
-            style="?attr/materialButtonOutlinedStyle" />
+            android:textColor="@color/colorPrimaryDark"
+            app:strokeColor="@color/colorPrimaryDark"
+            style="?attr/materialButtonOutlinedStyle"
+            />
     </com.google.android.material.button.MaterialButtonToggleGroup>
+
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

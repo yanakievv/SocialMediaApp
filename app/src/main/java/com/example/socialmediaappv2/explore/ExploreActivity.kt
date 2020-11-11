@@ -13,12 +13,9 @@ import com.example.socialmediaappv2.profile.ProfileActivity
 import com.example.socialmediaappv2.upload.Camera2Activity
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import kotlinx.android.synthetic.main.activity_explore.explore_button
-import kotlinx.android.synthetic.main.activity_explore.fragment_container
-import kotlinx.android.synthetic.main.activity_explore.home_button
-import kotlinx.android.synthetic.main.activity_explore.profile_button
-import kotlinx.android.synthetic.main.activity_explore.upload_button
+import kotlinx.android.synthetic.main.activity_explore.*
 import kotlinx.android.synthetic.main.content_explore_scrolling.*
+import java.security.AccessController.getContext
 
 class ExploreActivity : AppCompatActivity() {
 
@@ -33,6 +30,11 @@ class ExploreActivity : AppCompatActivity() {
         setContentView(R.layout.activity_explore)
         setSupportActionBar(findViewById(R.id.toolbar))
         findViewById<CollapsingToolbarLayout>(R.id.toolbar_layout).title = title
+        image_view.isClickable = false
+        image_view.setTextColor(resources.getColor(R.color.colorBlack))
+        image_view.setBackgroundColor(resources.getColor(R.color.colorPrimaryDark))
+        map_view.setTextColor(resources.getColor(R.color.colorWhite))
+        map_view.setBackgroundColor(resources.getColor(R.color.colorLightBlack))
 
         if (recyclerViewAdapter == null) {
             recyclerView = main_fragment.view as RecyclerView
@@ -42,6 +44,13 @@ class ExploreActivity : AppCompatActivity() {
         findViewById<FloatingActionButton>(R.id.fab).setOnClickListener {
             finish()
             startActivity(intent)
+        }
+        map_view.setOnClickListener {
+            map_view.setTextColor(resources.getColor(R.color.colorBlack))
+            map_view.setBackgroundColor(resources.getColor(R.color.colorPrimaryDark))
+            image_view.setTextColor(resources.getColor(R.color.colorWhite))
+            image_view.setBackgroundColor(resources.getColor(R.color.colorLightBlack))
+            startActivity(Intent(this, MapsActivity::class.java))
         }
         home_button.setOnClickListener {
             startActivity(Intent(this, HomeActivity::class.java))
