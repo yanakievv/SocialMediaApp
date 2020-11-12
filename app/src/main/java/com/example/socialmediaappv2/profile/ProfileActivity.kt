@@ -11,6 +11,7 @@ import com.example.socialmediaappv2.R
 import com.example.socialmediaappv2.contract.Contract
 import com.example.socialmediaappv2.data.SharedPreference
 import com.example.socialmediaappv2.explore.ExploreActivity
+import com.example.socialmediaappv2.explore.MapsActivity
 import com.example.socialmediaappv2.home.HomeActivity
 import com.example.socialmediaappv2.home.content.PublisherPictureContent
 import com.example.socialmediaappv2.login.LoginActivity
@@ -18,7 +19,6 @@ import com.example.socialmediaappv2.upload.Camera2Activity
 import kotlinx.android.synthetic.main.activity_home.home_button
 import kotlinx.android.synthetic.main.activity_home.upload_button
 import kotlinx.android.synthetic.main.activity_profile.*
-import kotlinx.coroutines.runBlocking
 
 private lateinit var presenter: Contract.ProfileInfoPresenter
 private lateinit var userId: String
@@ -51,12 +51,13 @@ class ProfileActivity : AppCompatActivity(), Contract.ProfileView {
             }
         }
         backButton.setOnClickListener {
-            if (intent.hasExtra("userId")) intent.extras!!.remove("userId")
-            runBlocking {  presenter.init(sharedPref.getString("publisherId")!!, applicationContext) }
-            update()
+            finish()
         }
         explore_button.setOnClickListener {
-            startActivity(Intent(this, ExploreActivity::class.java))
+            if (sharedPref.getString("explore") == "maps") {
+                startActivity(Intent(this, MapsActivity::class.java))
+            }
+            else startActivity(Intent(this, ExploreActivity::class.java))
         }
         upload_button.setOnClickListener {
             startActivity(Intent(this, Camera2Activity::class.java))

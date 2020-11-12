@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.socialmediaappv2.PreviewImageFragment
 import com.example.socialmediaappv2.R
 import com.example.socialmediaappv2.data.ImageModel
+import com.example.socialmediaappv2.data.SharedPreference
 import com.example.socialmediaappv2.explore.content.PublicPictureContent
 import com.example.socialmediaappv2.home.HomeActivity
 import com.example.socialmediaappv2.profile.ProfileActivity
@@ -21,9 +22,12 @@ class ExploreActivity : AppCompatActivity() {
 
     private var recyclerViewAdapter: ExploreRecyclerViewAdapter? = null
     private var recyclerView: RecyclerView? = null
+    private lateinit var sharedPref: SharedPreference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        sharedPref = SharedPreference(this)
+        sharedPref.save("explore", "image")
 
         PublicPictureContent.init(50.0, this)
 

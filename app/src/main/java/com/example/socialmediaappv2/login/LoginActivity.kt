@@ -28,8 +28,6 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.coroutines.runBlocking
-import pub.devrel.easypermissions.AfterPermissionGranted
-import pub.devrel.easypermissions.EasyPermissions
 
 
 private const val RC_SIGN_IN = 7

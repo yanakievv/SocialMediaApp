@@ -11,6 +11,7 @@ import com.example.socialmediaappv2.R
 import com.example.socialmediaappv2.data.ImageModel
 import com.example.socialmediaappv2.data.SharedPreference
 import com.example.socialmediaappv2.explore.ExploreActivity
+import com.example.socialmediaappv2.explore.MapsActivity
 import com.example.socialmediaappv2.home.content.PublisherPictureContent
 import com.example.socialmediaappv2.profile.ProfileActivity
 import com.example.socialmediaappv2.upload.Camera2Activity
@@ -65,7 +66,10 @@ class HomeActivity : AppCompatActivity() {
             startActivity(Intent(this, HomeActivity::class.java))
         }
         explore_button.setOnClickListener {
-            startActivity(Intent(this, ExploreActivity::class.java))
+            if (sharedPref.getString("explore") == "maps") {
+                startActivity(Intent(this, MapsActivity::class.java))
+            }
+            else startActivity(Intent(this, ExploreActivity::class.java))
         }
         upload_button.setOnClickListener {
             if (!PublisherPictureContent.isCurrentUser()) {
