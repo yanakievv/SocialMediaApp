@@ -66,10 +66,7 @@ class HomeActivity : AppCompatActivity() {
             startActivity(Intent(this, HomeActivity::class.java))
         }
         explore_button.setOnClickListener {
-            if (sharedPref.getString("explore") == "maps") {
-                startActivity(Intent(this, MapsActivity::class.java))
-            }
-            else startActivity(Intent(this, ExploreActivity::class.java))
+            startActivity(Intent(this, ExploreActivity::class.java))
         }
         upload_button.setOnClickListener {
             if (!PublisherPictureContent.isCurrentUser()) {

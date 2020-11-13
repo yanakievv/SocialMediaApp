@@ -12,6 +12,7 @@ import com.example.socialmediaappv2.contract.Contract
 import com.example.socialmediaappv2.data.SharedPreference
 import com.example.socialmediaappv2.explore.ExploreActivity
 import com.example.socialmediaappv2.explore.MapsActivity
+import com.example.socialmediaappv2.explore.content.PublicPictureContent
 import com.example.socialmediaappv2.home.HomeActivity
 import com.example.socialmediaappv2.home.content.PublisherPictureContent
 import com.example.socialmediaappv2.login.LoginActivity
@@ -54,10 +55,7 @@ class ProfileActivity : AppCompatActivity(), Contract.ProfileView {
             finish()
         }
         explore_button.setOnClickListener {
-            if (sharedPref.getString("explore") == "maps") {
-                startActivity(Intent(this, MapsActivity::class.java))
-            }
-            else startActivity(Intent(this, ExploreActivity::class.java))
+            startActivity(Intent(this, ExploreActivity::class.java))
         }
         upload_button.setOnClickListener {
             startActivity(Intent(this, Camera2Activity::class.java))
@@ -75,6 +73,7 @@ class ProfileActivity : AppCompatActivity(), Contract.ProfileView {
             popup.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
                     R.id.logout -> {
+                        PublicPictureContent.initLoaded = false
                         PublisherPictureContent.initLoaded = false
                         sharedPref.clearData()
                         PublisherPictureContent.TEMP.clear()

@@ -27,7 +27,6 @@ class ExploreActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         sharedPref = SharedPreference(this)
-        sharedPref.save("explore", "image")
 
         PublicPictureContent.init(50.0, this)
 

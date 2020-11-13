@@ -3,6 +3,7 @@ package com.example.socialmediaappv2.explore
 import android.content.Intent
 import android.graphics.*
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.example.socialmediaappv2.PreviewImageFragment
@@ -36,12 +37,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private lateinit var mMap: GoogleMap
     private lateinit var sharedPref: SharedPreference
+    private lateinit var current: LatLng
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
         sharedPref = SharedPreference(this)
-        sharedPref.save("explore", "maps")
         PublicPictureContent.init(50.0, this)
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
@@ -67,7 +68,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
-        val current = LatLng(
+        current = LatLng(
             sharedPref.getString("lat")!!.toDouble(),
             sharedPref.getString("long")!!.toDouble()
         )
@@ -77,7 +78,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         currentLocation.tag = ImageModel(0, "0", "0", "0", "0", 0.0, 0.0, 0)
         mMap.moveCamera(CameraUpdateFactory.newLatLng(current))
 
-        for (i in PublicPictureContent.ITEMS) {
+        for (i in PublicPictureContent.ALL_ITEMS) {
             val pos = LatLng(i.latitude, i.longitude)
             mMap.addMarker(
                 MarkerOptions().position(LatLng(i.latitude, i.longitude))
@@ -93,6 +94,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         )
                     ).draggable(true)
             ).tag = i
+            Log.e("IMG_ID", i.picId.toString())
         }
 
         mMap.setOnMarkerDragListener(object : OnMarkerDragListener {

@@ -1,6 +1,5 @@
 package com.example.socialmediaappv2.login
 
-//import com.facebook.stetho.Stetho
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -16,8 +15,11 @@ import com.example.socialmediaappv2.R
 import com.example.socialmediaappv2.UserInfoPresenter
 import com.example.socialmediaappv2.contract.Contract
 import com.example.socialmediaappv2.data.SharedPreference
+import com.example.socialmediaappv2.explore.content.PublicPictureContent
 import com.example.socialmediaappv2.home.HomeActivity
+import com.example.socialmediaappv2.home.content.PublisherPictureContent
 import com.facebook.*
+import com.facebook.AccessToken
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
 import com.facebook.stetho.Stetho
@@ -94,51 +96,68 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
             // Facebook Logout
             if (AccessToken.getCurrentAccessToken() != null) {
                 GraphRequest(
-                    AccessToken.getCurrentAccessToken(), "/me/permissions/", null, HttpMethod.DELETE
-                ) {
-                    AccessToken.setCurrentAccessToken(null)
+                    AccessToken.getCurrentAccessToken(), "/me/permissions/", null, HttpMethod.DELETE) {
                     LoginManager.getInstance().logOut()
                 }.executeAsync()
                 updateUI()
+
+                // NOTE: When logging out a pop up window shows up to confirm log out but app stills logs out?
+                // After some research the fix I came up with is to modify the LoginButton.java in facebook-login-5.15.3-sources.jar so that the popup doesn't show.
+                // If building on your own machine the pop up will surely show so for a real experience I might upload the modified facebook package to github or you could modify it
+                // the .java file is located in com/facebook/login/widget, note that those directories are accessible after extracting the .jar file, source is called LoginButton.java
+                // go to line 796(should be in LoginClickListener scope) and modify the performLogout function to only declare a 'final LoginManager loginManager = getLoginManager();' and call 'loginManager.logOut();' right after that
+                // after modifying it compress the dirs com and META-INFO(or something like that) back to a .jar file with the same name as the original and voila.
+                // $ jar xvf [archive].jar
+                // $ jar cvf [dest].jar [file1, file2 ...]
+                // Really cheesy way to handle the popup, but I didn't find any way to remove it or do some kind of a listener/callback to see if clicked cancel or log out.
+
             }
+            else {
+                // Facebook Login
+                FBLoginButton.setReadPermissions("email", "public_profile")
+                LoginManager.getInstance().registerCallback(callbackManager,
+                    object : FacebookCallback<LoginResult> {
+                        private lateinit var profileTracker: ProfileTracker
 
-            // Facebook Login
-            FBLoginButton.setReadPermissions("email", "public_profile")
-            LoginManager.getInstance().registerCallback(callbackManager,
-                object : FacebookCallback<LoginResult> {
-                    private lateinit var profileTracker: ProfileTracker
-
-                    override fun onSuccess(loginResult: LoginResult?) {
-                        if (Profile.getCurrentProfile() == null) {
-                            profileTracker = object : ProfileTracker() {
-                                override fun onCurrentProfileChanged(
-                                    oldProfile: Profile?,
-                                    currentProfile: Profile
-                                ) {
-                                    Log.e(ACC_TAG,"FB " + currentProfile.firstName + " " + currentProfile.id)
-                                    profileTracker.stopTracking()
-                                    updateUI(currentProfile)
+                        override fun onSuccess(loginResult: LoginResult?) {
+                            if (Profile.getCurrentProfile() == null) {
+                                profileTracker = object : ProfileTracker() {
+                                    override fun onCurrentProfileChanged(
+                                        oldProfile: Profile?,
+                                        currentProfile: Profile
+                                    ) {
+                                        Log.e(
+                                            ACC_TAG,
+                                            "FB " + currentProfile.firstName + " " + currentProfile.id
+                                        )
+                                        profileTracker.stopTracking()
+                                        updateUI(currentProfile)
+                                    }
                                 }
-                            }
 
-                        } else {
-                            val profile = Profile.getCurrentProfile()
-                            Log.v("fbLogin", profile.firstName)
+                            } else {
+                                val profile = Profile.getCurrentProfile()
+                                Log.v("fbLogin", profile.firstName)
+                            }
+                        }
+
+                        override fun onCancel() {
+                            Log.d("fbLogin", "onCancel.")
+                        }
+
+                        override fun onError(error: FacebookException) {
+                            Log.d("fbLogin", "onError.")
                         }
                     }
-
-                    override fun onCancel() {
-                        Log.d("fbLogin", "onCancel.")
-                    }
-
-                    override fun onError(error: FacebookException) {
-                        Log.d("fbLogin", "onError.")
-                    }
-                }
-            )
+                )
+            }
         }
 
         continueButton.setOnClickListener {
+            PublicPictureContent.initLoaded = false
+            PublisherPictureContent.initLoaded = false
+            sharedPref.clearData()
+            PublisherPictureContent.TEMP.clear()
             if (getLatLong()) {
                 runBlocking {
                     presenter.init(publisherId!!, publisherDisplayName!!, applicationContext)
@@ -148,7 +167,11 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
                 startActivity(intent)
             }
             else {
-                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                    1
+                )
             }
         }
     }
@@ -167,15 +190,27 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
         when (requestCode) {
             1 -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    if ((ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)) {
+                    if ((ContextCompat.checkSelfPermission(
+                            this,
+                            Manifest.permission.ACCESS_FINE_LOCATION
+                        ) == PackageManager.PERMISSION_GRANTED)
+                    ) {
                         continueButton.performClick()
                     }
                 } else {
-                    Toast.makeText(this, "Location service is used for determining what posts you see in the explore menu.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this,
+                        "Location service is used for determining what posts you see in the explore menu.",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
                 return
             }
@@ -216,7 +251,8 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
     }
 
     private fun getLatLong(): Boolean {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION
+        if (ActivityCompat.checkSelfPermission(
+                this, Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED) {
             return false
         }
