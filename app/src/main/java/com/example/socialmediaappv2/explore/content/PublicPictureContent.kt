@@ -3,12 +3,7 @@ package com.example.socialmediaappv2.explore.content
 import android.content.Context
 import android.util.Log
 import com.example.socialmediaappv2.data.*
-import com.google.android.gms.maps.model.LatLng
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import java.text.DecimalFormat
+import kotlinx.coroutines.*
 import java.util.*
 import kotlin.math.*
 
@@ -16,9 +11,9 @@ import kotlin.math.*
 object PublicPictureContent {
 
 
+    val SORTED_IMAGES: MutableList<ImageBitmap> = ArrayList()
     var ITEMS: MutableList<ImageModel> = ArrayList()
-    var ALL_ITEMS: MutableList<ImageModel> = ArrayList()
-    var distances: MutableList<Double> = ArrayList()
+    var IMAGES: MutableList<ImageBitmap> = ArrayList()
 
     var initLoaded = false
 
@@ -30,14 +25,14 @@ object PublicPictureContent {
 
     private var latLong: DoubleArray = doubleArrayOf(0.0, 0.0)
 
-    fun init(radius: Double, context: Context) {
+    fun init(context: Context) {
         if (!initLoaded) {
-            initForce(radius, context)
+            initForce(context)
             initLoaded = true
         }
     }
 
-    fun initForce(radius: Double, context: Context) {
+    fun initForce(context: Context) {
         Log.e("LOADFROM", "database_all_posts")
 
         sharedPref = SharedPreference(context)
@@ -48,17 +43,49 @@ object PublicPictureContent {
         latLong[0] = sharedPref.getString("lat")!!.toDouble()
         latLong[1] = sharedPref.getString("long")!!.toDouble()
 
-        runBlocking {
-            userInfo = userDAO.getUser(sharedPref.getString("publisherId")!!)
-            ALL_ITEMS = imageDao.getPosts(userInfo.publisherId) as MutableList<ImageModel>
-            ITEMS = filterRecords(ALL_ITEMS, radius)
-        }
-        CoroutineScope(Dispatchers.IO).launch {
-            for (i in 0 until ALL_ITEMS.size - 1) {
-                distances.add(calcDistance(LatLng(latLong[0], latLong[1]), LatLng(ALL_ITEMS[i].latitude, ALL_ITEMS[i].longitude)))
-            }
-            quickSort(distances)
+        ITEMS.clear()
+        IMAGES.clear()
 
+        if (!this::userInfo.isInitialized) {
+            runBlocking {userInfo = userDAO.getUser(sharedPref.getString("publisherId")!!)}
+        }
+
+        var cnt = 0
+        var sem = 0
+        var notified = true
+
+        CoroutineScope(Dispatchers.IO).launch {
+            ITEMS = imageDao.getPosts(userInfo.publisherId) as MutableList<ImageModel>
+            sem = ITEMS.size
+            for (img in ITEMS) {
+                IMAGES.add(ImageBitmap(img))
+                cnt++
+                notified = cnt % 4 != 0
+                Log.e("IO","Loaded image ${img.picId}, cnt = ${cnt}")
+            }
+            Log.e("IO", "RELEASED")
+        }
+        CoroutineScope(Dispatchers.Default).launch {
+            while (sem == 0) {
+                delay(100)
+                Log.e("Default", "Waiting for items.")
+            }
+            var i = 0
+            while (cnt <= sem) {
+                if (i < cnt) {
+                    SORTED_IMAGES.insertAtPlace(IMAGES[i])
+                    Log.e("Default", "Inserted item ${IMAGES[i].image.picId}, item number ${i}, cnt = ${cnt}, sem = ${sem}")
+                    i++
+                }
+                if (i == sem) {
+                    Log.e("Default", "RELEASED")
+                    break
+                }
+            }
+
+        }
+        CoroutineScope(Dispatchers.Main).launch {
+            // TODO
         }
     }
 
@@ -81,73 +108,23 @@ object PublicPictureContent {
         return dx.pow(2) + dy.pow(2) <= R.pow(2)
     }
 
-    private fun calcDistance(StartP: LatLng, EndP: LatLng): Double {
-        val r = 6371
-        val lat1 = StartP.latitude
-        val lat2 = EndP.latitude
-        val lon1 = StartP.longitude
-        val lon2 = EndP.longitude
-        val dLat = Math.toRadians(lat2 - lat1)
-        val dLon = Math.toRadians(lon2 - lon1)
-        val a = (sin(dLat / 2) * sin(dLat / 2)
-                + (cos(Math.toRadians(lat1))
-                * cos(Math.toRadians(lat2)) * sin(dLon / 2)
-                * sin(dLon / 2)))
-        val c = 2 * asin(sqrt(a))
-        val valueResult = r * c
-        val km = valueResult / 1
-        val newFormat = DecimalFormat("####")
-        val kmInDec: Int = Integer.valueOf(newFormat.format(km))
-        val meter = valueResult % 1000
-        val meterInDec: Int = Integer.valueOf(newFormat.format(meter))
-        Log.e(
-            "DISTANCE", valueResult.toString() + "| KM: " + kmInDec
-                    + "| M: " + meterInDec
-        )
-        return r * c
-    }
-
-    fun quickSort(array: MutableList<Double>) {
-        _quickSort(array, 0, array.size - 1) //sorts the distances as well as the ALL_ITEMS by distance
-    }
-
-    private fun _quickSort(array: MutableList<Double>, left: Int, right: Int) {
-        val index = partition (array, left, right)
-        if(left < index-1) {
-            _quickSort(array, left, index-1)
-        }
-        if(index < right) {
-            _quickSort(array,index, right)
-        }
-    }
-
-    private fun partition(array: MutableList<Double>, l: Int, r: Int): Int {
-        var left = l
-        var right = r
-        val pivot = array[(left + right)/2]
-        while (left <= right) {
-            while (array[left] < pivot) left++
-
-            while (array[right] > pivot) right--
-
-            if (left <= right) {
-                multiswap(array, left,right)
-                left++
-                right--
+    private fun binarySearchIterative(input: MutableList<ImageBitmap>, dist: Double): Int {
+        var low = 0
+        var high = input.size - 1
+        var mid: Int
+        while (low <= high) {
+            mid = low + ((high - low) / 2)
+            when {
+                dist > input[mid].getDistance() -> low = mid + 1
+                dist == input[mid].getDistance() -> return mid
+                dist < input[mid].getDistance() -> high = mid - 1
             }
         }
-        return left
+        return 0
     }
 
-    private fun multiswap(array: MutableList<Double>, a: Int, b: Int) {
-        val temp = array[a]
-        val tempImg = ALL_ITEMS[a]
-
-        array[a] = array[b]
-        array[b] = temp
-
-        ALL_ITEMS[a] = ALL_ITEMS[b]
-        ALL_ITEMS[b] = tempImg
+    private fun MutableList<ImageBitmap>.insertAtPlace(new: ImageBitmap) {
+        this.add(binarySearchIterative(this, new.getDistance()), new)
     }
 
 }

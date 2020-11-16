@@ -12,12 +12,13 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.example.socialmediaappv2.R
+import com.example.socialmediaappv2.data.ImageBitmap
 import com.example.socialmediaappv2.data.ImageModel
 import com.example.socialmediaappv2.profile.ProfileActivity
 
 
 class ExploreRecyclerViewAdapter(
-    private val values: List<ImageModel>,
+    private val values: List<ImageBitmap>,
     private val context: Context
 ) : RecyclerView.Adapter<ExploreRecyclerViewAdapter.ViewHolder>() {
 
@@ -29,9 +30,9 @@ class ExploreRecyclerViewAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = values[position]
-        holder.imageView.setImageBitmap(BitmapFactory.decodeFile(item.image))
-        holder.contentView.text = item.publisherDisplayName
-        holder.dateView.text = item.date.take(10)
+        holder.imageView.setImageBitmap(item.getBitmap())
+        holder.contentView.text = item.image.publisherDisplayName
+        holder.dateView.text = item.image.date.take(10)
     }
 
     override fun getItemCount(): Int = values.size
@@ -49,12 +50,12 @@ class ExploreRecyclerViewAdapter(
                     popup.setOnMenuItemClickListener { item ->
                         when (item.itemId) {
                             R.id.preview_image -> {
-                               (context as ExploreActivity).displayFragment(values[adapterPosition])
+                               (context as ExploreActivity).displayFragment(values[adapterPosition].image)
                                 true
                             }
                             R.id.visit_profile -> {
                                 val intent = Intent(context, ProfileActivity::class.java)
-                                intent.putExtra("userId", values[adapterPosition].publisherId)
+                                intent.putExtra("userId", values[adapterPosition].image.publisherId)
                                 startActivity(context, intent, null)
                                 true
                             }

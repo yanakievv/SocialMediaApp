@@ -37,7 +37,7 @@ class ExploreFragment : Fragment() {
                     columnCount <= 1 -> LinearLayoutManager(context)
                     else -> GridLayoutManager(context, columnCount)
                 }
-                adapter = ExploreRecyclerViewAdapter(PublicPictureContent.ITEMS, view.context)
+                adapter = ExploreRecyclerViewAdapter(PublicPictureContent.IMAGES, view.context)
             }
         }
         return view

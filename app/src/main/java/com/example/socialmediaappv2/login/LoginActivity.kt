@@ -108,7 +108,7 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
                 // go to line 796(should be in LoginClickListener scope) and modify the performLogout function to only declare a 'final LoginManager loginManager = getLoginManager();' and call 'loginManager.logOut();' right after that
                 // after modifying it compress the dirs com and META-INFO(or something like that) back to a .jar file with the same name as the original and voila.
                 // $ jar xvf [archive].jar
-                // $ jar cvf [dest].jar [file1, file2 ...]
+                // $ jar cvf [dest].jar [file1 file2 ...]
                 // Really cheesy way to handle the popup, but I didn't find any way to remove it or do some kind of a listener/callback to see if clicked cancel or log out.
 
             }

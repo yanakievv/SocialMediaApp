@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.example.socialmediaappv2.PreviewImageFragment
 import com.example.socialmediaappv2.R
+import com.example.socialmediaappv2.data.ImageBitmap
 import com.example.socialmediaappv2.data.ImageModel
 import com.example.socialmediaappv2.data.SharedPreference
 import com.example.socialmediaappv2.explore.content.PublicPictureContent
@@ -43,7 +44,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
         sharedPref = SharedPreference(this)
-        PublicPictureContent.init(50.0, this)
+        PublicPictureContent.init(this)
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
@@ -78,45 +79,41 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         currentLocation.tag = ImageModel(0, "0", "0", "0", "0", 0.0, 0.0, 0)
         mMap.moveCamera(CameraUpdateFactory.newLatLng(current))
 
-        for (i in PublicPictureContent.ALL_ITEMS) {
-            val pos = LatLng(i.latitude, i.longitude)
+        for (i in PublicPictureContent.SORTED_IMAGES) {
+            val pos = LatLng(i.image.latitude, i.image.longitude)
             mMap.addMarker(
-                MarkerOptions().position(LatLng(i.latitude, i.longitude))
-                    .title(i.publisherDisplayName).icon(
+                MarkerOptions().position(LatLng(i.image.latitude, i.image.longitude))
+                    .title(i.image.publisherDisplayName).icon(
                         BitmapDescriptorFactory.fromBitmap(
                             CircleBubbleTransformation().transform(
                                 Bitmap.createScaledBitmap(
-                                    BitmapFactory.decodeFile(
-                                        i.image
-                                    ), 320, 320, false
+                                    i.getBitmap(), 320, 320, false
                                 )
                             )
                         )
                     ).draggable(true)
             ).tag = i
-            Log.e("IMG_ID", i.picId.toString())
+            Log.e("IMG_ID", i.image.picId.toString())
         }
 
         mMap.setOnMarkerDragListener(object : OnMarkerDragListener {
             override fun onMarkerDragStart(marker: Marker) {
-                displayFragment(marker.tag as ImageModel)
+                displayFragment((marker.tag as ImageBitmap).image)
             }
 
             override fun onMarkerDragEnd(marker: Marker) {
                 mMap.addMarker(
-                    MarkerOptions().position(LatLng((marker.tag as ImageModel).latitude, (marker.tag as ImageModel).longitude))
-                        .title((marker.tag as ImageModel).publisherDisplayName).icon(
+                    MarkerOptions().position(LatLng((marker.tag as ImageBitmap).image.latitude, (marker.tag as ImageBitmap).image.longitude))
+                        .title((marker.tag as ImageBitmap).image.publisherDisplayName).icon(
                             BitmapDescriptorFactory.fromBitmap(
                                 CircleBubbleTransformation().transform(
                                     Bitmap.createScaledBitmap(
-                                        BitmapFactory.decodeFile(
-                                            (marker.tag as ImageModel).image
-                                        ), 320, 320, false
+                                        (marker.tag as ImageBitmap).getBitmap(), 320, 320, false
                                     )
                                 )
                             )
                         ).draggable(true)
-                ).tag = (marker.tag as ImageModel)
+                ).tag = (marker.tag as ImageBitmap)
                 marker.remove()
             }
 
@@ -129,10 +126,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         })
 
         mMap.setOnInfoWindowClickListener {
-            val position = it.tag as ImageModel
-            if (position.picId != 0) {
+            val position = it.tag as ImageBitmap
+            if (position.image.picId != 0) {
                 val intent = Intent(this, ProfileActivity::class.java)
-                intent.putExtra("userId", position.publisherId)
+                intent.putExtra("userId", position.image.publisherId)
                 ContextCompat.startActivity(this, intent, null)
             }
         }

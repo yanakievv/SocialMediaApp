@@ -1,7 +1,10 @@
 package com.example.socialmediaappv2.explore
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.example.socialmediaappv2.PreviewImageFragment
@@ -17,6 +20,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.android.synthetic.main.activity_explore.*
 import kotlinx.android.synthetic.main.content_explore_scrolling.*
 import java.security.AccessController.getContext
+import kotlin.system.measureTimeMillis
 
 class ExploreActivity : AppCompatActivity() {
 
@@ -25,10 +29,9 @@ class ExploreActivity : AppCompatActivity() {
     private lateinit var sharedPref: SharedPreference
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         sharedPref = SharedPreference(this)
-
-        PublicPictureContent.init(50.0, this)
 
         setContentView(R.layout.activity_explore)
         setSupportActionBar(findViewById(R.id.toolbar))
@@ -44,9 +47,10 @@ class ExploreActivity : AppCompatActivity() {
             recyclerViewAdapter = (main_fragment.view as RecyclerView).adapter as ExploreRecyclerViewAdapter
         }
 
+        PublicPictureContent.init(this)
+
         findViewById<FloatingActionButton>(R.id.fab).setOnClickListener {
-            PublicPictureContent.initForce(50.0, this)
-            recyclerViewAdapter?.notifyDataSetChanged()
+            PublicPictureContent.initForce(this)
         }
         map_view.setOnClickListener {
             map_view.setTextColor(resources.getColor(R.color.colorBlack))
@@ -76,5 +80,9 @@ class ExploreActivity : AppCompatActivity() {
         val fragmentTransaction = fragmentManager.beginTransaction()
         fragmentTransaction.add(fragment_container.id, previewImageFragment).commit()
 
+    }
+
+    fun notifyDataChanged() {
+        recyclerViewAdapter?.notifyDataSetChanged()
     }
 }
