@@ -2,22 +2,26 @@ package com.example.socialmediaappv2.data
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.util.Log
 import com.google.android.gms.maps.model.LatLng
-import java.text.DecimalFormat
 import kotlin.math.asin
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
 class ImageBitmap(val image: ImageModel) {
+    private var thumbnail: Bitmap?
     private var bitmap: Bitmap?
     private var distance: Double = 0.0
 
     init {
-        bitmap = if (image.picId != 0) {
-            BitmapFactory.decodeFile(image.image)
-        } else null
+        if (image.picId != 0) {
+            bitmap = BitmapFactory.decodeFile(image.image)
+            thumbnail = scaleDown(image.image, 256, 144)
+        }
+        else {
+            bitmap = null
+            thumbnail = null
+        }
     }
 
     operator fun compareTo(rhs: ImageBitmap): Int {
@@ -31,7 +35,16 @@ class ImageBitmap(val image: ImageModel) {
         return image.hashCode()
     }
 
-    fun calcDistance(latLng: LatLng): Double {
+    fun scaleDown(path: String, w: Int, h: Int): Bitmap {
+        val opts = BitmapFactory.Options()
+        opts.inJustDecodeBounds = true
+        val bmp = BitmapFactory.decodeFile(path, opts)
+        opts.inSampleSize = calculateInSampleSize(opts, w, h)
+        opts.inJustDecodeBounds = false
+        return BitmapFactory.decodeFile(path, opts)
+    }
+
+    fun calcDistance(latLng: LatLng){
         val r = 6371
         val lat1 = image.latitude
         val lat2 = latLng.latitude
@@ -45,7 +58,6 @@ class ImageBitmap(val image: ImageModel) {
                 * sin(dLon / 2)))
 
         distance = r * 2 * asin(sqrt(a))
-        return distance
     }
 
     fun getDistance(): Double {
@@ -54,10 +66,17 @@ class ImageBitmap(val image: ImageModel) {
 
     fun updateBitmap() {
         bitmap = BitmapFactory.decodeFile(image.image)
+        thumbnail = scaleDown(image.image, 256, 144)
     }
+
     fun getBitmap(): Bitmap {
         return bitmap!!
     }
+
+    fun getThumbnail(): Bitmap {
+        return thumbnail!!
+    }
+
     private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
         val (height: Int, width: Int) = options.run { outHeight to outWidth }
         var inSampleSize = 1
@@ -73,25 +92,5 @@ class ImageBitmap(val image: ImageModel) {
         }
 
         return inSampleSize
-    }
-
-    private fun decodeSampledBitmapFromFile(
-        path: String,
-        reqWidth: Int,
-        reqHeight: Int
-    ): Bitmap {
-        // First decode with inJustDecodeBounds=true to check dimensions
-        return BitmapFactory.Options().run {
-            inJustDecodeBounds = true
-            BitmapFactory.decodeFile(path, this)
-
-            // Calculate inSampleSize
-            inSampleSize = calculateInSampleSize(this, reqWidth, reqHeight)
-
-            // Decode bitmap with inSampleSize set
-            inJustDecodeBounds = false
-
-            BitmapFactory.decodeFile(path,this)
-        }
     }
 }

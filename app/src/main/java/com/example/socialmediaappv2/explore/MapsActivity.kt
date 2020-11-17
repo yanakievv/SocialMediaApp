@@ -87,9 +87,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     .title(i.image.publisherDisplayName).icon(
                         BitmapDescriptorFactory.fromBitmap(
                             CircleBubbleTransformation().transform(
-                                Bitmap.createScaledBitmap(
-                                    i.getBitmap(), 320, 320, false
-                                )
+                                i.getThumbnail()
                             )
                         )
                     ).draggable(true)
@@ -108,9 +106,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         .title((marker.tag as ImageBitmap).image.publisherDisplayName).icon(
                             BitmapDescriptorFactory.fromBitmap(
                                 CircleBubbleTransformation().transform(
-                                    Bitmap.createScaledBitmap(
-                                        (marker.tag as ImageBitmap).getBitmap(), 320, 320, false
-                                    )
+                                        (marker.tag as ImageBitmap).getThumbnail()
                                 )
                             )
                         ).draggable(true)

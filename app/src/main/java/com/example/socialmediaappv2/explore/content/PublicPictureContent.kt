@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.util.Log
 import com.example.socialmediaappv2.data.*
 import com.example.socialmediaappv2.explore.ExploreActivity
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.*
 import java.util.*
 import kotlin.math.*
@@ -84,6 +85,7 @@ object PublicPictureContent {
             var i = 0
             while (cnt <= sem) {
                 if (i < cnt) {
+                    IMAGES[i].calcDistance(LatLng(latLong[0], latLong[1]))
                     SORTED_IMAGES.insertAtPlace(IMAGES[i])
                     Log.e("Default", "Inserted item ${IMAGES[i].image.picId}, item number ${i}, cnt = ${cnt}, sem = ${sem}")
                     i++
