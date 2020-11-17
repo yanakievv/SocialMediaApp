@@ -32,6 +32,7 @@ import kotlinx.android.synthetic.main.activity_maps.image_view
 import kotlinx.android.synthetic.main.activity_maps.map_view
 import kotlinx.android.synthetic.main.activity_maps.profile_button
 import kotlinx.android.synthetic.main.activity_maps.upload_button
+import kotlin.math.min
 
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -76,7 +77,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val currentLocation = mMap.addMarker(
             MarkerOptions().position(current).title("Current Location")
         )
-        currentLocation.tag = ImageModel(0, "0", "0", "0", "0", 0.0, 0.0, 0)
+        currentLocation.tag = ImageBitmap(ImageModel(0, "0", "0", "0", "0", 0.0, 0.0, 0))
         mMap.moveCamera(CameraUpdateFactory.newLatLng(current))
 
         for (i in PublicPictureContent.SORTED_IMAGES) {
@@ -146,7 +147,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
 class CircleBubbleTransformation : Transformation {
     override fun transform(source: Bitmap): Bitmap {
-        val size = Math.min(source.width, source.height)
+        val size = min(source.width, source.height)
         val r = size / 2f
         val output = Bitmap.createBitmap(
             size + triangleMargin,

@@ -1,11 +1,15 @@
 package com.example.socialmediaappv2.explore.content
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.util.Log
 import com.example.socialmediaappv2.data.*
+import com.example.socialmediaappv2.explore.ExploreActivity
 import kotlinx.coroutines.*
 import java.util.*
 import kotlin.math.*
+import kotlin.system.measureTimeMillis
 
 
 object PublicPictureContent {
@@ -35,6 +39,10 @@ object PublicPictureContent {
     fun initForce(context: Context) {
         Log.e("LOADFROM", "database_all_posts")
 
+        CoroutineScope(Dispatchers.Main).launch {
+            (context as ExploreActivity).showSkeleton()
+        }
+
         sharedPref = SharedPreference(context)
         databaseInstance = UserDatabase.getInstance(context)
         imageDao = databaseInstance.imageDAO
@@ -45,6 +53,7 @@ object PublicPictureContent {
 
         ITEMS.clear()
         IMAGES.clear()
+        SORTED_IMAGES.clear()
 
         if (!this::userInfo.isInitialized) {
             runBlocking {userInfo = userDAO.getUser(sharedPref.getString("publisherId")!!)}
@@ -52,7 +61,6 @@ object PublicPictureContent {
 
         var cnt = 0
         var sem = 0
-        var notified = true
 
         CoroutineScope(Dispatchers.IO).launch {
             ITEMS = imageDao.getPosts(userInfo.publisherId) as MutableList<ImageModel>
@@ -60,8 +68,11 @@ object PublicPictureContent {
             for (img in ITEMS) {
                 IMAGES.add(ImageBitmap(img))
                 cnt++
-                notified = cnt % 4 != 0
                 Log.e("IO","Loaded image ${img.picId}, cnt = ${cnt}")
+            }
+            CoroutineScope(Dispatchers.Main).launch {
+                Log.e("Main", "Hiding skeleton.")
+                (context as ExploreActivity).hideSkeleton()
             }
             Log.e("IO", "RELEASED")
         }
@@ -83,9 +94,6 @@ object PublicPictureContent {
                 }
             }
 
-        }
-        CoroutineScope(Dispatchers.Main).launch {
-            // TODO
         }
     }
 
@@ -126,5 +134,4 @@ object PublicPictureContent {
     private fun MutableList<ImageBitmap>.insertAtPlace(new: ImageBitmap) {
         this.add(binarySearchIterative(this, new.getDistance()), new)
     }
-
 }

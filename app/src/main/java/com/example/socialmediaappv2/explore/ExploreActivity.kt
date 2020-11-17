@@ -5,8 +5,11 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
+import com.ethanhua.skeleton.RecyclerViewSkeletonScreen
+import com.ethanhua.skeleton.Skeleton
 import com.example.socialmediaappv2.PreviewImageFragment
 import com.example.socialmediaappv2.R
 import com.example.socialmediaappv2.data.ImageModel
@@ -27,6 +30,7 @@ class ExploreActivity : AppCompatActivity() {
     private var recyclerViewAdapter: ExploreRecyclerViewAdapter? = null
     private var recyclerView: RecyclerView? = null
     private lateinit var sharedPref: SharedPreference
+    private lateinit var skeletonScreen: RecyclerViewSkeletonScreen
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -82,7 +86,14 @@ class ExploreActivity : AppCompatActivity() {
 
     }
 
-    fun notifyDataChanged() {
-        recyclerViewAdapter?.notifyDataSetChanged()
+    fun hideSkeleton() {
+        skeletonScreen.hide()
+    }
+
+    fun showSkeleton() {
+        skeletonScreen = Skeleton.bind(recyclerView)
+            .adapter(recyclerViewAdapter)
+            .load(R.layout.fragment_explore_skeleton)
+            .show();
     }
 }

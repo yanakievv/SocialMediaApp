@@ -64,6 +64,10 @@ dependencies {
 
     //Picasso for Gmaps marker customization
     implementation "com.squareup.picasso:picasso:2.71828"
+
+    // Skeleton and shimmer for pleasant item loading
+    implementation 'com.ethanhua:skeleton:1.1.2'
+    implementation 'io.supercharge:shimmerlayout:2.1.0'
 }
 
 

@@ -11,11 +11,13 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 class ImageBitmap(val image: ImageModel) {
-    private var bitmap: Bitmap
+    private var bitmap: Bitmap?
     private var distance: Double = 0.0
 
     init {
-        bitmap = BitmapFactory.decodeFile(image.image)
+        bitmap = if (image.picId != 0) {
+            BitmapFactory.decodeFile(image.image)
+        } else null
     }
 
     operator fun compareTo(rhs: ImageBitmap): Int {
@@ -54,6 +56,42 @@ class ImageBitmap(val image: ImageModel) {
         bitmap = BitmapFactory.decodeFile(image.image)
     }
     fun getBitmap(): Bitmap {
-        return bitmap
+        return bitmap!!
+    }
+    private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
+        val (height: Int, width: Int) = options.run { outHeight to outWidth }
+        var inSampleSize = 1
+
+        if (height > reqHeight || width > reqWidth) {
+
+            val halfHeight: Int = height / 2
+            val halfWidth: Int = width / 2
+
+            while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth) {
+                inSampleSize *= 2
+            }
+        }
+
+        return inSampleSize
+    }
+
+    private fun decodeSampledBitmapFromFile(
+        path: String,
+        reqWidth: Int,
+        reqHeight: Int
+    ): Bitmap {
+        // First decode with inJustDecodeBounds=true to check dimensions
+        return BitmapFactory.Options().run {
+            inJustDecodeBounds = true
+            BitmapFactory.decodeFile(path, this)
+
+            // Calculate inSampleSize
+            inSampleSize = calculateInSampleSize(this, reqWidth, reqHeight)
+
+            // Decode bitmap with inSampleSize set
+            inJustDecodeBounds = false
+
+            BitmapFactory.decodeFile(path,this)
+        }
     }
 }
