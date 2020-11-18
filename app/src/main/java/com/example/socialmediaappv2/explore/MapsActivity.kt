@@ -77,62 +77,66 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val currentLocation = mMap.addMarker(
             MarkerOptions().position(current).title("Current Location")
         )
-        currentLocation.tag = ImageBitmap(ImageModel(0, "0", "0", "0", "0", 0.0, 0.0, 0))
+        //currentLocation.tag = ImageBitmap(ImageModel(0, "0", "0", "0", "0", 0.0, 0.0, 0))
+        currentLocation.isDraggable = false
         mMap.moveCamera(CameraUpdateFactory.newLatLng(current))
 
         for (i in PublicPictureContent.SORTED_IMAGES) {
-            val pos = LatLng(i.image.latitude, i.image.longitude)
+            val pos = LatLng(i.imageModel.latitude, i.imageModel.longitude)
             mMap.addMarker(
-                MarkerOptions().position(LatLng(i.image.latitude, i.image.longitude))
-                    .title(i.image.publisherDisplayName).icon(
+                MarkerOptions().position(LatLng(i.imageModel.latitude, i.imageModel.longitude))
+                    .title(i.imageModel.publisherDisplayName).icon(
                         BitmapDescriptorFactory.fromBitmap(
-                            CircleBubbleTransformation().transform(
-                                i.getThumbnail()
-                            )
+                            i.getThumbnail()?.let {
+                                CircleBubbleTransformation().transform(
+                                    it
+                                )
+                            }
                         )
-                    ).draggable(true)
+                    ).draggable(false)
             ).tag = i
-            Log.e("IMG_ID", i.image.picId.toString())
+            Log.e("IMG_ID", i.imageModel.picId.toString())
         }
 
-        mMap.setOnMarkerDragListener(object : OnMarkerDragListener {
+        /*mMap.setOnMarkerDragListener(object : OnMarkerDragListener {
             override fun onMarkerDragStart(marker: Marker) {
-                displayFragment((marker.tag as ImageBitmap).image)
+                displayFragment(marker.tag as ImageBitmap)
             }
 
             override fun onMarkerDragEnd(marker: Marker) {
                 mMap.addMarker(
-                    MarkerOptions().position(LatLng((marker.tag as ImageBitmap).image.latitude, (marker.tag as ImageBitmap).image.longitude))
-                        .title((marker.tag as ImageBitmap).image.publisherDisplayName).icon(
+                    MarkerOptions().position(LatLng((marker.tag as ImageBitmap).imageModel.latitude, (marker.tag as ImageBitmap).imageModel.longitude))
+                        .title((marker.tag as ImageBitmap).imageModel.publisherDisplayName).icon(
                             BitmapDescriptorFactory.fromBitmap(
-                                CircleBubbleTransformation().transform(
-                                        (marker.tag as ImageBitmap).getThumbnail()
-                                )
+                                    CircleBubbleTransformation().transform(
+                                        (marker.tag as ImageBitmap).getThumbnail()!!
+                                    )
                             )
                         ).draggable(true)
                 ).tag = (marker.tag as ImageBitmap)
                 marker.remove()
             }
 
-            // a really hackish way to make a onMarkerLongClickListener, another way is to use onMapLongClickListener and do maths to decide which post to show,
-            // but there are posts that have the same coordinates and wont work as intended
-
             override fun onMarkerDrag(marker: Marker) {
                 // TODO Auto-generated method stub
             }
-        })
+        })   USED TO WORK ----  W/Bitmap: Called getWidth() on a recycle()'d bitmap! This is undefined behavior!
+                                Called getHeight() on a recycle()'d bitmap! This is undefined behavior!
+                                W/Bitmap: Called getConfig() on a recycle()'d bitmap! This is undefined behavior!
+                                A/Bitmap: Error, cannot access an invalid/free'd bitmap here!
+                                A/libc: Fatal signal 6 (SIGABRT), code -1 (SI_QUEUE) in tid 8199 (ocialmediaappv2), pid 8199 (ocialmediaappv2) */
 
         mMap.setOnInfoWindowClickListener {
             val position = it.tag as ImageBitmap
-            if (position.image.picId != 0) {
+            if (position.imageModel.picId != 0) {
                 val intent = Intent(this, ProfileActivity::class.java)
-                intent.putExtra("userId", position.image.publisherId)
+                intent.putExtra("userId", position.imageModel.publisherId)
                 ContextCompat.startActivity(this, intent, null)
             }
         }
     }
 
-    fun displayFragment(image: ImageModel) {
+    fun displayFragment(image: ImageBitmap) {
         val previewImageFragment = PreviewImageFragment(image)
         val fragmentManager = supportFragmentManager
         val fragmentTransaction = fragmentManager.beginTransaction()

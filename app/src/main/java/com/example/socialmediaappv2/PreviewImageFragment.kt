@@ -12,6 +12,7 @@ import android.view.WindowManager
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import com.example.socialmediaappv2.data.ImageBitmap
 import com.example.socialmediaappv2.data.ImageModel
 import kotlinx.android.synthetic.main.fragment_preview_image.*
 
@@ -19,7 +20,7 @@ import kotlinx.android.synthetic.main.fragment_preview_image.*
  * An example full-screen fragment that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  */
-class PreviewImageFragment(private val image: ImageModel) : Fragment() {
+class PreviewImageFragment(private val image: ImageBitmap) : Fragment() {
     private val hideHandler = Handler()
 
     @Suppress("InlinedApi")
@@ -90,17 +91,15 @@ class PreviewImageFragment(private val image: ImageModel) : Fragment() {
             parentFragmentManager.beginTransaction().remove(this).commit()
             onDestroy()
         }
-        backButton?.setOnTouchListener(delayHideTouchListener)
     }
 
-    private fun getProperlyRotatedBitmap(imageModel: ImageModel): Bitmap? {
-        val bitmap = BitmapFactory.decodeFile(imageModel.image)
+    private fun getProperlyRotatedBitmap(image: ImageBitmap): Bitmap? {
+        val bitmap = image.getBitmap()!!
         val matrix = Matrix()
-        if (kotlin.math.abs(imageModel.rotation) == 2 || kotlin.math.abs(imageModel.rotation) == 4) {
+        if (kotlin.math.abs(image.imageModel.rotation) == 2 || kotlin.math.abs(image.imageModel.rotation) == 4) {
             matrix.postRotate(90F)
         }
         val scaledBitmap = Bitmap.createScaledBitmap(bitmap, bitmap.width, bitmap.height, true)
-
         return Bitmap.createBitmap(
             scaledBitmap,
             0,

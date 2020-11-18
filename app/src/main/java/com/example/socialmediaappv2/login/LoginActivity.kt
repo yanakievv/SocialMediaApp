@@ -154,10 +154,9 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
         }
 
         continueButton.setOnClickListener {
-            PublicPictureContent.initLoaded = false
-            PublisherPictureContent.initLoaded = false
+            PublicPictureContent.nuke()
+            PublisherPictureContent.nuke()
             sharedPref.clearData()
-            PublisherPictureContent.TEMP.clear()
             if (getLatLong()) {
                 runBlocking {
                     presenter.init(publisherId!!, publisherDisplayName!!, applicationContext)

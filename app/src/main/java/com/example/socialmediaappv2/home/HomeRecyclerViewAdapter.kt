@@ -10,13 +10,13 @@ import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.socialmediaappv2.R
+import com.example.socialmediaappv2.data.ImageBitmap
 import com.example.socialmediaappv2.data.ImageModel
-import com.example.socialmediaappv2.explore.ExploreActivity
 import com.example.socialmediaappv2.home.content.PublisherPictureContent
 
 
 class HomeRecyclerViewAdapter(
-    private val values: List<ImageModel>,
+    private val values: List<ImageBitmap>,
     private val context: Context
 ) : RecyclerView.Adapter<HomeRecyclerViewAdapter.ViewHolder>() {
 
@@ -30,8 +30,8 @@ class HomeRecyclerViewAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = values[position]
-        holder.imageView.setImageBitmap(BitmapFactory.decodeFile(item.image))
-        holder.contentView.text = item.date
+        holder.imageView.setImageBitmap(item.getBitmap())
+        holder.contentView.text = item.imageModel.date
     }
 
     override fun getItemCount(): Int = values.size
@@ -49,13 +49,14 @@ class HomeRecyclerViewAdapter(
                         popup.setOnMenuItemClickListener { item ->
                             when (item.itemId) {
                                 R.id.set_as_profile_picture -> {
-                                    PublisherPictureContent.setProfilePicture(values[adapterPosition].picId)
+                                    PublisherPictureContent.setProfilePicture(values[adapterPosition].imageModel.picId)
                                     true
                                 }
                                 R.id.delete_post -> {
                                     PublisherPictureContent.removePost(
-                                        values[adapterPosition].picId,
-                                        values[adapterPosition].image
+                                        values[adapterPosition].imageModel.picId,
+                                        values[adapterPosition].imageModel.path,
+                                        context
                                     )
                                     notifyDataSetChanged()
                                     true

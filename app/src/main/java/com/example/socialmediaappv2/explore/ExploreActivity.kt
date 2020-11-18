@@ -12,6 +12,7 @@ import com.ethanhua.skeleton.RecyclerViewSkeletonScreen
 import com.ethanhua.skeleton.Skeleton
 import com.example.socialmediaappv2.PreviewImageFragment
 import com.example.socialmediaappv2.R
+import com.example.socialmediaappv2.data.ImageBitmap
 import com.example.socialmediaappv2.data.ImageModel
 import com.example.socialmediaappv2.data.SharedPreference
 import com.example.socialmediaappv2.explore.content.PublicPictureContent
@@ -78,7 +79,7 @@ class ExploreActivity : AppCompatActivity() {
         }
     }
 
-    fun displayFragment(image: ImageModel) {
+    fun displayFragment(image: ImageBitmap) {
         val previewImageFragment = PreviewImageFragment(image)
         val fragmentManager = supportFragmentManager
         val fragmentTransaction = fragmentManager.beginTransaction()

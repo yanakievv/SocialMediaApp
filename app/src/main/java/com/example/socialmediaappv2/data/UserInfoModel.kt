@@ -20,5 +20,8 @@ data class UserInfoModel(
     var bio: String,
 
     @ColumnInfo(name = "profile_pic_id")
-    var profilePic: Int
+    var profilePic: Int,
+
+    @ColumnInfo(name = "posts")
+    var posts: Int
 )

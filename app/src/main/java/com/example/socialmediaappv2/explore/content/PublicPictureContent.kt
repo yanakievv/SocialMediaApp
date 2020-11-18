@@ -1,8 +1,6 @@
 package com.example.socialmediaappv2.explore.content
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.util.Log
 import com.example.socialmediaappv2.data.*
 import com.example.socialmediaappv2.explore.ExploreActivity
@@ -10,7 +8,6 @@ import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.*
 import java.util.*
 import kotlin.math.*
-import kotlin.system.measureTimeMillis
 
 
 object PublicPictureContent {
@@ -23,7 +20,7 @@ object PublicPictureContent {
     var initLoaded = false
 
     private lateinit var sharedPref: SharedPreference
-    private lateinit var userInfo: UserInfoModel
+    private var userInfo: UserInfoModel? = null
     private lateinit var databaseInstance: UserDatabase
     private lateinit var userDAO: UserDAO
     private lateinit var imageDao: ImageDAO
@@ -52,20 +49,22 @@ object PublicPictureContent {
         latLong[0] = sharedPref.getString("lat")!!.toDouble()
         latLong[1] = sharedPref.getString("long")!!.toDouble()
 
-        ITEMS.clear()
         IMAGES.clear()
         SORTED_IMAGES.clear()
 
-        if (!this::userInfo.isInitialized) {
+        if (userInfo == null) {
             runBlocking {userInfo = userDAO.getUser(sharedPref.getString("publisherId")!!)}
         }
 
         var cnt = 0
         var sem = 0
+        var empty = false
 
         CoroutineScope(Dispatchers.IO).launch {
-            ITEMS = imageDao.getPosts(userInfo.publisherId) as MutableList<ImageModel>
+            Log.e("CURRENT_USER", userInfo!!.publisherId)
+            ITEMS = imageDao.getPosts(userInfo!!.publisherId) as MutableList<ImageModel>
             sem = ITEMS.size
+            empty = sem == 0
             for (img in ITEMS) {
                 IMAGES.add(ImageBitmap(img))
                 cnt++
@@ -75,10 +74,11 @@ object PublicPictureContent {
                 Log.e("Main", "Hiding skeleton.")
                 (context as ExploreActivity).hideSkeleton()
             }
+            ITEMS.clear()
             Log.e("IO", "RELEASED")
         }
         CoroutineScope(Dispatchers.Default).launch {
-            while (sem == 0) {
+            while (sem == 0 && !empty) {
                 delay(100)
                 Log.e("Default", "Waiting for items.")
             }
@@ -87,7 +87,7 @@ object PublicPictureContent {
                 if (i < cnt) {
                     IMAGES[i].calcDistance(LatLng(latLong[0], latLong[1]))
                     SORTED_IMAGES.insertAtPlace(IMAGES[i])
-                    Log.e("Default", "Inserted item ${IMAGES[i].image.picId}, item number ${i}, cnt = ${cnt}, sem = ${sem}")
+                    Log.e("Default", "Inserted item ${IMAGES[i].imageModel.picId}, item number ${i}, cnt = ${cnt}, sem = ${sem}")
                     i++
                 }
                 if (i == sem) {
@@ -135,5 +135,12 @@ object PublicPictureContent {
 
     private fun MutableList<ImageBitmap>.insertAtPlace(new: ImageBitmap) {
         this.add(binarySearchIterative(this, new.getDistance()), new)
+    }
+
+    fun nuke() {
+        userInfo = null
+        initLoaded = false
+        IMAGES.clear()
+        SORTED_IMAGES.clear()
     }
 }

@@ -2,8 +2,6 @@ package com.example.socialmediaappv2.explore
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,7 +12,6 @@ import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.example.socialmediaappv2.R
 import com.example.socialmediaappv2.data.ImageBitmap
-import com.example.socialmediaappv2.data.ImageModel
 import com.example.socialmediaappv2.profile.ProfileActivity
 
 
@@ -32,8 +29,8 @@ class ExploreRecyclerViewAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = values[position]
         holder.imageView.setImageBitmap(item.getBitmap())
-        holder.contentView.text = item.image.publisherDisplayName
-        holder.dateView.text = item.image.date.take(10)
+        holder.contentView.text = item.imageModel.publisherDisplayName
+        holder.dateView.text = item.imageModel.date.take(10)
     }
 
     override fun getItemCount(): Int = values.size
@@ -51,12 +48,12 @@ class ExploreRecyclerViewAdapter(
                     popup.setOnMenuItemClickListener { item ->
                         when (item.itemId) {
                             R.id.preview_image -> {
-                               (context as ExploreActivity).displayFragment(values[adapterPosition].image)
+                               (context as ExploreActivity).displayFragment(values[adapterPosition])
                                 true
                             }
                             R.id.visit_profile -> {
                                 val intent = Intent(context, ProfileActivity::class.java)
-                                intent.putExtra("userId", values[adapterPosition].image.publisherId)
+                                intent.putExtra("userId", values[adapterPosition].imageModel.publisherId)
                                 startActivity(context, intent, null)
                                 true
                             }

@@ -39,6 +39,7 @@ class ProfileInfoPresenter(var view: Contract.ProfileView?): Contract.ProfileInf
             sharedPref.save("displayName", userInfo.displayName)
             sharedPref.save("birthDate", userInfo.birthDate)
             sharedPref.save("bio", userInfo.bio)
+            sharedPref.save("posts", userInfo.posts)
         }
     }
 
@@ -79,9 +80,7 @@ class ProfileInfoPresenter(var view: Contract.ProfileView?): Contract.ProfileInf
     }
 
     override fun getNumberOfPosts(): Int {
-        var num = 0
-        runBlocking { num = imageDao.getNumberOfPosts(userInfo.publisherId)}
-        return num
+        return userInfo.posts
     }
 
     override fun isCurrentProfile(): Boolean {

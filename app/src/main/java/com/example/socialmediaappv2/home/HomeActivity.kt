@@ -6,8 +6,11 @@ import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
+import com.ethanhua.skeleton.RecyclerViewSkeletonScreen
+import com.ethanhua.skeleton.Skeleton
 import com.example.socialmediaappv2.PreviewImageFragment
 import com.example.socialmediaappv2.R
+import com.example.socialmediaappv2.data.ImageBitmap
 import com.example.socialmediaappv2.data.ImageModel
 import com.example.socialmediaappv2.data.SharedPreference
 import com.example.socialmediaappv2.explore.ExploreActivity
@@ -30,6 +33,7 @@ class HomeActivity : AppCompatActivity() {
 
     private var recyclerViewAdapter: HomeRecyclerViewAdapter? = null
     private var recyclerView: RecyclerView? = null
+    private lateinit var skeletonScreen: RecyclerViewSkeletonScreen
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,9 +65,8 @@ class HomeActivity : AppCompatActivity() {
         }
 
         fab.setOnClickListener {
-            PublisherPictureContent.initLoaded = false
-            finish()
-            startActivity(Intent(this, HomeActivity::class.java))
+            PublisherPictureContent.initLoadImagesFromDatabase(sharedPref.getString("publisherId")!!, this)
+            fab.visibility = View.INVISIBLE
         }
         explore_button.setOnClickListener {
             startActivity(Intent(this, ExploreActivity::class.java))
@@ -93,11 +96,26 @@ class HomeActivity : AppCompatActivity() {
         recyclerViewAdapter?.notifyDataSetChanged()
     }
 
-    fun displayFragment(image: ImageModel) {
+    fun displayFragment(image: ImageBitmap) {
         val previewImageFragment = PreviewImageFragment(image)
         val fragmentManager = supportFragmentManager
         val fragmentTransaction = fragmentManager.beginTransaction()
         fragmentTransaction.add(fragment_container.id, previewImageFragment).commit()
+    }
+
+    fun notifyAdapter() {
+        recyclerViewAdapter?.notifyDataSetChanged()
+    }
+
+    fun hideSkeleton() {
+        skeletonScreen.hide()
+    }
+
+    fun showSkeleton() {
+        skeletonScreen = Skeleton.bind(recyclerView)
+            .adapter(recyclerViewAdapter)
+            .load(R.layout.fragment_explore_skeleton)
+            .show()
     }
 
 }

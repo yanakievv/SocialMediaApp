@@ -15,7 +15,7 @@ data class ImageModel(
     val publisherId: String,
 
     @ColumnInfo(name = "image")
-    val image: String,
+    val path: String,
 
     @ColumnInfo(name = "publisher_display_name")
     val publisherDisplayName: String,

@@ -11,7 +11,6 @@ import com.example.socialmediaappv2.R
 import com.example.socialmediaappv2.contract.Contract
 import com.example.socialmediaappv2.data.SharedPreference
 import com.example.socialmediaappv2.explore.ExploreActivity
-import com.example.socialmediaappv2.explore.MapsActivity
 import com.example.socialmediaappv2.explore.content.PublicPictureContent
 import com.example.socialmediaappv2.home.HomeActivity
 import com.example.socialmediaappv2.home.content.PublisherPictureContent
@@ -73,10 +72,9 @@ class ProfileActivity : AppCompatActivity(), Contract.ProfileView {
             popup.setOnMenuItemClickListener { item ->
                 when (item.itemId) {
                     R.id.logout -> {
-                        PublicPictureContent.initLoaded = false
-                        PublisherPictureContent.initLoaded = false
+                        PublicPictureContent.nuke()
+                        PublisherPictureContent.nuke()
                         sharedPref.clearData()
-                        PublisherPictureContent.TEMP.clear()
                         finishAffinity()
                         startActivity(Intent(this, LoginActivity::class.java))
                         true
@@ -101,7 +99,7 @@ class ProfileActivity : AppCompatActivity(), Contract.ProfileView {
     override fun update() {
         presenter.reInit(sharedPref.getString("publisherId")!!)
         val img = presenter.getProfilePic()
-        profilePicture.setImageBitmap(BitmapFactory.decodeFile(img?.image))
+        profilePicture.setImageBitmap(BitmapFactory.decodeFile(img?.path))
         displayName.text = presenter.getDisplayName()
         posts.text = "Posts: " + presenter.getNumberOfPosts()
         birthDate.text = "Born: " + presenter.getBirthDate()

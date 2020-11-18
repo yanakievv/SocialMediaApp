@@ -8,20 +8,14 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-class ImageBitmap(val image: ImageModel) {
+class ImageBitmap(val imageModel: ImageModel) {
     private var thumbnail: Bitmap?
     private var bitmap: Bitmap?
     private var distance: Double = 0.0
 
     init {
-        if (image.picId != 0) {
-            bitmap = BitmapFactory.decodeFile(image.image)
-            thumbnail = scaleDown(image.image, 256, 144)
-        }
-        else {
-            bitmap = null
-            thumbnail = null
-        }
+        bitmap = BitmapFactory.decodeFile(imageModel.path)
+        thumbnail = makeThumbnail(imageModel.path, 256, 144)
     }
 
     operator fun compareTo(rhs: ImageBitmap): Int {
@@ -32,23 +26,24 @@ class ImageBitmap(val image: ImageModel) {
     }
 
     override fun hashCode(): Int {
-        return image.hashCode()
+        return imageModel.hashCode()
     }
 
-    fun scaleDown(path: String, w: Int, h: Int): Bitmap {
-        val opts = BitmapFactory.Options()
-        opts.inJustDecodeBounds = true
-        val bmp = BitmapFactory.decodeFile(path, opts)
-        opts.inSampleSize = calculateInSampleSize(opts, w, h)
-        opts.inJustDecodeBounds = false
-        return BitmapFactory.decodeFile(path, opts)
+    fun makeThumbnail(path: String, w: Int, h: Int): Bitmap {
+        return BitmapFactory.Options().run {
+            //inJustDecodeBounds = true
+            val bmp = BitmapFactory.decodeFile(path, this)
+            inSampleSize = calculateInSampleSize(this, w, h)
+            //inJustDecodeBounds = false
+            BitmapFactory.decodeFile(path, this)
+        }
     }
 
     fun calcDistance(latLng: LatLng){
         val r = 6371
-        val lat1 = image.latitude
+        val lat1 = imageModel.latitude
         val lat2 = latLng.latitude
-        val lon1 = image.longitude
+        val lon1 = imageModel.longitude
         val lon2 = latLng.longitude
         val dLat = Math.toRadians(lat2 - lat1)
         val dLon = Math.toRadians(lon2 - lon1)
@@ -65,16 +60,16 @@ class ImageBitmap(val image: ImageModel) {
     }
 
     fun updateBitmap() {
-        bitmap = BitmapFactory.decodeFile(image.image)
-        thumbnail = scaleDown(image.image, 256, 144)
+        bitmap = BitmapFactory.decodeFile(imageModel.path)
+        thumbnail = makeThumbnail(imageModel.path, 256, 144)
     }
 
-    fun getBitmap(): Bitmap {
-        return bitmap!!
+    fun getBitmap(): Bitmap? {
+        return bitmap
     }
 
-    fun getThumbnail(): Bitmap {
-        return thumbnail!!
+    fun getThumbnail(): Bitmap? {
+        return thumbnail
     }
 
     private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
