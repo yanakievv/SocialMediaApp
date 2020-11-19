@@ -14,9 +14,9 @@ interface Contract {
     }
     interface UserInfoPresenter: BasePresenter {
 
-        suspend fun init(id: String, displayName: String, context: Context)
+        fun init(id: String, displayName: String, context: Context)
         fun reInit(id: String)
-        fun refreshDb()
+        suspend fun refreshDb()
 
         fun getUserPosts(): List<ImageModel>?
         fun addPost(newPost: String, rotation: Int, latLong: DoubleArray, context: Context)

@@ -25,6 +25,9 @@ interface ImageDAO {
     @Query("SELECT * FROM image_data WHERE publisher_id != :publisherId")
     suspend fun getPosts(publisherId: String): List<ImageModel>
 
+    @Query("UPDATE image_data SET publisher_display_name = :publisherDisplayName WHERE publisher_id = :publisherId")
+    suspend fun updatePosts(publisherId: String, publisherDisplayName: String)
+
     @Query("DELETE FROM image_data WHERE picture_id = :picId AND publisher_id = :publisherId")
     suspend fun removePost(publisherId: String, picId: Int)
 

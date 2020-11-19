@@ -8,6 +8,7 @@ import android.app.Activity
 import android.content.ContentResolver
 import android.content.ContentValues
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.*
 import android.hardware.camera2.*
@@ -33,9 +34,13 @@ import com.example.socialmediaappv2.R
 import com.example.socialmediaappv2.UserInfoPresenter
 import com.example.socialmediaappv2.contract.Contract
 import com.example.socialmediaappv2.data.SharedPreference
+import com.example.socialmediaappv2.home.HomeActivity
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import kotlinx.android.synthetic.main.activity_camera2.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.FileNotFoundException
@@ -51,14 +56,16 @@ import kotlin.math.sqrt
 
 private const val REQUEST_CAMERA_PERMISSION = 200
 private const val GET_LAT_LONG = "GETLATLONG"
-internal lateinit var presenter: Contract.UserInfoPresenter
-private lateinit var fusedLocationClient: FusedLocationProviderClient
+
 
 
 class Camera2Activity : AppCompatActivity(), Contract.MainView {
 
     private val tag = "AndroidCameraApi"
     private val orientations = SparseIntArray()
+
+    private lateinit var presenter: Contract.UserInfoPresenter
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     private var cameraId: String? = null
     private var cameraDevice: CameraDevice? = null
@@ -150,7 +157,7 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         sharedPref = SharedPreference(this)
         setPresenter(UserInfoPresenter(this))
-        runBlocking { presenter.init(
+        CoroutineScope(Dispatchers.IO).launch { presenter.init(
             sharedPref.getString("publisherId")!!,
             "",
             this@Camera2Activity
@@ -161,7 +168,7 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
         takePictureButton.setOnClickListener { takePicture() }
         backButton.setOnClickListener {
             closeCamera()
-            finish()
+            startActivity(Intent(this, HomeActivity::class.java))
         }
         swapButton.setOnClickListener {
             closeCamera()
@@ -526,6 +533,15 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
     override fun onResume() {
         super.onResume()
         Log.e(tag, "onResume")
+        if (!this::presenter.isInitialized) {
+            CoroutineScope(Dispatchers.IO).launch { presenter.init(
+                sharedPref.getString("publisherId")!!,
+                "",
+                this@Camera2Activity
+            )
+            }
+        }
+        sharedPref = SharedPreference(this)
         camera = sharedPref.getInt("orientation")
         flash = sharedPref.getBoolean("flash")
         updateFlashButton(camera == 0)

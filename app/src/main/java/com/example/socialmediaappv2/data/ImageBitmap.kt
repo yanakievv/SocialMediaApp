@@ -29,12 +29,12 @@ class ImageBitmap(val imageModel: ImageModel) {
         return imageModel.hashCode()
     }
 
-    fun makeThumbnail(path: String, w: Int, h: Int): Bitmap {
+    private fun makeThumbnail(path: String, w: Int, h: Int): Bitmap {
         return BitmapFactory.Options().run {
-            //inJustDecodeBounds = true
+            inJustDecodeBounds = true
             val bmp = BitmapFactory.decodeFile(path, this)
             inSampleSize = calculateInSampleSize(this, w, h)
-            //inJustDecodeBounds = false
+            inJustDecodeBounds = false
             BitmapFactory.decodeFile(path, this)
         }
     }

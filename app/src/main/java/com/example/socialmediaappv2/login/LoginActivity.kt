@@ -29,6 +29,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import kotlinx.android.synthetic.main.activity_login.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 
@@ -158,10 +161,8 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
             PublisherPictureContent.nuke()
             sharedPref.clearData()
             if (getLatLong()) {
-                runBlocking {
-                    presenter.init(publisherId!!, publisherDisplayName!!, applicationContext)
-
-                }
+                presenter.init(publisherId!!, publisherDisplayName!!, applicationContext)
+                PublisherPictureContent.isCurrentUser = true
                 val intent = Intent(this, HomeActivity::class.java)
                 startActivity(intent)
             }

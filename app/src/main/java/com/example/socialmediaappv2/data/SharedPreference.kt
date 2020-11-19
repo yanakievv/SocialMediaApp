@@ -37,6 +37,14 @@ class SharedPreference(val context: Context) {
             return sharedPref.getInt(key, 0)
         }
 
+        fun incInt(key: String) {
+            save(key, getInt(key) + 1)
+        }
+
+        fun decInt(key: String) {
+            save(key, getInt(key) - 1)
+        }
+
         fun getBoolean(key: String): Boolean {
             return sharedPref.getBoolean(key, false)
         }

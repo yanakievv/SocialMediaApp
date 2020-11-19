@@ -5,6 +5,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import com.example.socialmediaappv2.contract.Contract
 import com.example.socialmediaappv2.data.*
+import com.example.socialmediaappv2.home.content.PublisherPictureContent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,28 +24,32 @@ class UserInfoPresenter(var view: Contract.MainView?): Contract.UserInfoPresente
         private lateinit var imageDao: ImageDAO
     }
 
-    override suspend fun init(id: String, displayName: String, context: Context) {
+    override fun init(id: String, displayName: String, context: Context) {
         sharedPref = SharedPreference(context)
         databaseInstance = UserDatabase.getInstance(context)
         userDao = databaseInstance.userDAO
         imageDao = databaseInstance.imageDAO
-        if (userDao.checkUser(id) == 0) {
-            userDao.addUser(UserInfoModel(id, displayName, "Private", "", 0, 0))
+        runBlocking {
+            if (userDao.checkUser(id) == 0) {
+                userDao.addUser(UserInfoModel(id, displayName, "Private", "", 0, 0))
+            }
+            userInfo = userDao.getUser(id)
         }
-        userInfo = userDao.getUser(id)
         sharedPref.save("publisherId", userInfo.publisherId)
         sharedPref.save("displayName", userInfo.displayName)
         sharedPref.save("birthDate", userInfo.birthDate)
         sharedPref.save("bio", userInfo.bio)
+        sharedPref.save("profilePic", userInfo.profilePic)
         sharedPref.save("posts", userInfo.posts)
+
     }
 
     override fun reInit(id: String) {
         CoroutineScope(Dispatchers.IO).launch { userInfo = userDao.getUser(id) }
     }
 
-    override fun refreshDb() {
-        CoroutineScope(Dispatchers.IO).launch { userDao.updateUser(userInfo) }
+    override suspend fun refreshDb() {
+        userDao.updateUser(userInfo)
     }
 
     override fun getUserPosts(): List<ImageModel>? {
@@ -69,9 +74,10 @@ class UserInfoPresenter(var view: Contract.MainView?): Contract.UserInfoPresente
                     rotation
                 )
             )
+            userInfo.posts++
+            refreshDb()
         }
-        userInfo.posts++
-        refreshDb()
+        sharedPref.incInt("posts")
     }
 
     override fun getCurrentUser(): UserInfoModel {

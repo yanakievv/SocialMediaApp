@@ -88,10 +88,19 @@ class ExploreActivity : AppCompatActivity() {
     }
 
     fun hideSkeleton() {
+        image_view.isClickable = true
+        map_view.isClickable = true
+        image_view.background.alpha = 255
+        map_view.background.alpha = 255
         skeletonScreen.hide()
     }
 
     fun showSkeleton() {
+        image_view.isClickable = false
+        map_view.isClickable = false
+        image_view.background.alpha = 64
+        map_view.background.alpha = 64
+        map_view.visibility
         skeletonScreen = Skeleton.bind(recyclerView)
             .adapter(recyclerViewAdapter)
             .load(R.layout.fragment_explore_skeleton)

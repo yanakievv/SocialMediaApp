@@ -54,7 +54,7 @@ class HomeActivity : AppCompatActivity() {
         setSupportActionBar(findViewById(R.id.toolbar))
         findViewById<CollapsingToolbarLayout>(R.id.toolbar_layout).title = title
 
-        if (PublisherPictureContent.isCurrentUser()) {
+        if (PublisherPictureContent.isCurrentUser) {
             fab.visibility = View.INVISIBLE
         }
         else fab.visibility = View.VISIBLE
@@ -72,7 +72,7 @@ class HomeActivity : AppCompatActivity() {
             startActivity(Intent(this, ExploreActivity::class.java))
         }
         upload_button.setOnClickListener {
-            if (!PublisherPictureContent.isCurrentUser()) {
+            if (!PublisherPictureContent.isCurrentUser) {
                 finish()
             }
             startActivity(Intent(this, Camera2Activity::class.java))
@@ -90,10 +90,10 @@ class HomeActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         Log.e("HomeActivity", "onResume")
-        if (PublisherPictureContent.isCurrentUser()) {
+        if (PublisherPictureContent.isCurrentUser && sharedPref.getInt("posts") != 0) {
             PublisherPictureContent.loadRecentImages(sharedPref.getString("publisherId")!!, this)
         }
-        recyclerViewAdapter?.notifyDataSetChanged()
+
     }
 
     fun displayFragment(image: ImageBitmap) {

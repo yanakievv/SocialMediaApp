@@ -41,7 +41,7 @@ class HomeRecyclerViewAdapter(
         val contentView: TextView = view.findViewById(R.id.item_date)
 
         init {
-            if (PublisherPictureContent.isCurrentUser()) {
+            if (PublisherPictureContent.isCurrentUser) {
                 imageView.setOnClickListener { v ->
                     if (v?.id == imageView.id) {
                         val popup = PopupMenu(context, this.contentView)

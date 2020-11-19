@@ -19,16 +19,17 @@ object PublisherPictureContent {
 
 
     private lateinit var sharedPref: SharedPreference
-    private var userInfo: UserInfoModel? = null
+    //private var userInfo: UserInfoModel? = null
     private lateinit var databaseInstance: UserDatabase
     private lateinit var userDAO: UserDAO
     private lateinit var imageDAO: ImageDAO
 
 
-    private var isCurrentUser: Boolean = false
+    var isCurrentUser: Boolean = false
 
     fun initLoadImagesFromDatabase(userId: String, context: Context) {
         Log.e("LOAD_FROM_USER", userId)
+//        Log.e("CURRENT_USER", sharedPref.getString("publisherId") as String)
 
 
         sharedPref = SharedPreference(context)
@@ -36,12 +37,7 @@ object PublisherPictureContent {
         imageDAO = databaseInstance.imageDAO
         userDAO = databaseInstance.userDAO
 
-        if (userInfo == null) {
-            CoroutineScope(Dispatchers.IO).launch {
-                userInfo = userDAO.getUser(sharedPref.getString("publisherId")!!)
-                Log.e("CURRENT_USER", userInfo!!.publisherId)
-            }
-        }
+        IMAGES.clear()
 
         if (userId == sharedPref.getString("publisherId")!! && IMAGES != TEMP) {
             isCurrentUser = true
@@ -52,12 +48,12 @@ object PublisherPictureContent {
             CoroutineScope(Dispatchers.Main).launch {
                 (context as HomeActivity).showSkeleton()
             }
-            IMAGES.clear()
             CoroutineScope(Dispatchers.IO).launch {
                 ITEMS = imageDAO.getPublisherPosts(userId) as MutableList<ImageModel>
                 for (i in ITEMS) {
                     IMAGES.add(ImageBitmap(i))
                 }
+                ITEMS.clear()
                 CoroutineScope(Dispatchers.Main).launch {
                     (context as HomeActivity).hideSkeleton()
                 }
@@ -66,7 +62,6 @@ object PublisherPictureContent {
 
             isCurrentUser = userId == sharedPref.getString("publisherId")
             initLoaded = true
-            ITEMS.clear()
             if (isCurrentUser) {
                 TEMP = IMAGES
             }
@@ -76,7 +71,7 @@ object PublisherPictureContent {
 
     fun loadRecentImages(userId: String, context: Context) {
 
-        Log.e("CURRENT_USER", userInfo?.publisherId as String)
+        Log.e("CURRENT_USER", sharedPref.getString("publisherId") as String)
         Log.e("SAME_USER", isCurrentUser.toString())
 
         if (SharedPreference.imagesTaken > 0 && isCurrentUser) {
@@ -85,21 +80,19 @@ object PublisherPictureContent {
                 (context as HomeActivity).showSkeleton()
             }
             CoroutineScope(Dispatchers.IO).launch {
-                if (userInfo == null) {
-                    userInfo = userDAO.getUser(sharedPref.getString("publisherId")!!)
-                }
                 ITEMS = imageDAO.getPublisherLastPosts(
-                    userInfo!!.publisherId,
+                    sharedPref.getString("publisherId") as String,
                     SharedPreference.imagesTaken
                 ) as MutableList<ImageModel>
                 SharedPreference.imagesTaken = 0
                 for (i in ITEMS) {
                     IMAGES.add(ImageBitmap(i))
                     Log.e("LOAD_FROM", "recent picture")
-                    userInfo!!.posts++
+                    sharedPref.incInt("posts")
                 }
                 ITEMS.clear()
                 CoroutineScope(Dispatchers.Main).launch {
+                    (context as HomeActivity).notifyAdapter()
                     (context as HomeActivity).hideSkeleton()
                 }
             }
@@ -110,16 +103,30 @@ object PublisherPictureContent {
     }
 
     private fun updateUser() {
+        val userInfo: UserInfoModel = UserInfoModel(sharedPref.getString("publisherId") as String,
+            sharedPref.getString("displayName") as String,
+            sharedPref.getString("birthDate") as String,
+            sharedPref.getString("bio") as String,
+            sharedPref.getInt("profilePic"),
+            sharedPref.getInt("posts")
+        )
+
         CoroutineScope(Dispatchers.IO).launch {
-            userInfo?.let { userDAO.updateUser(it) }
+            userDAO.updateUser(userInfo)
         }
     }
 
     fun setProfilePicture(picId: Int) {
         if (isCurrentUser) {
-            userInfo?.profilePic = picId
+            val userInfo: UserInfoModel = UserInfoModel(sharedPref.getString("publisherId") as String,
+                sharedPref.getString("displayName") as String,
+                sharedPref.getString("birthDate") as String,
+                sharedPref.getString("bio") as String,
+                picId,
+                sharedPref.getInt("posts")
+            )
             CoroutineScope(Dispatchers.IO).launch {
-                userInfo?.let { userDAO.updateUser(it) }
+                userDAO.updateUser(userInfo)
             }
         }
     }
@@ -139,7 +146,7 @@ object PublisherPictureContent {
                     (context as HomeActivity).notifyAdapter()
                 }
             }
-            userInfo!!.posts--
+            sharedPref.decInt("posts")
             updateUser()
         }
     }
@@ -159,13 +166,8 @@ object PublisherPictureContent {
         return -1
     }
 
-    fun isCurrentUser(): Boolean {
-        return isCurrentUser
-    }
-
     fun nuke() {
         initLoaded = false
-        userInfo = null
         TEMP.clear()
         IMAGES.clear()
     }

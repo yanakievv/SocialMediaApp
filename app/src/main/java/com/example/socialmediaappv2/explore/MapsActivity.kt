@@ -77,11 +77,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val currentLocation = mMap.addMarker(
             MarkerOptions().position(current).title("Current Location")
         )
-        //currentLocation.tag = ImageBitmap(ImageModel(0, "0", "0", "0", "0", 0.0, 0.0, 0))
-        currentLocation.isDraggable = false
         mMap.moveCamera(CameraUpdateFactory.newLatLng(current))
 
         for (i in PublicPictureContent.SORTED_IMAGES) {
+            i.updateBitmap()
             val pos = LatLng(i.imageModel.latitude, i.imageModel.longitude)
             mMap.addMarker(
                 MarkerOptions().position(LatLng(i.imageModel.latitude, i.imageModel.longitude))
@@ -98,40 +97,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             Log.e("IMG_ID", i.imageModel.picId.toString())
         }
 
-        /*mMap.setOnMarkerDragListener(object : OnMarkerDragListener {
-            override fun onMarkerDragStart(marker: Marker) {
-                displayFragment(marker.tag as ImageBitmap)
-            }
-
-            override fun onMarkerDragEnd(marker: Marker) {
-                mMap.addMarker(
-                    MarkerOptions().position(LatLng((marker.tag as ImageBitmap).imageModel.latitude, (marker.tag as ImageBitmap).imageModel.longitude))
-                        .title((marker.tag as ImageBitmap).imageModel.publisherDisplayName).icon(
-                            BitmapDescriptorFactory.fromBitmap(
-                                    CircleBubbleTransformation().transform(
-                                        (marker.tag as ImageBitmap).getThumbnail()!!
-                                    )
-                            )
-                        ).draggable(true)
-                ).tag = (marker.tag as ImageBitmap)
-                marker.remove()
-            }
-
-            override fun onMarkerDrag(marker: Marker) {
-                // TODO Auto-generated method stub
-            }
-        })   USED TO WORK ----  W/Bitmap: Called getWidth() on a recycle()'d bitmap! This is undefined behavior!
-                                Called getHeight() on a recycle()'d bitmap! This is undefined behavior!
-                                W/Bitmap: Called getConfig() on a recycle()'d bitmap! This is undefined behavior!
-                                A/Bitmap: Error, cannot access an invalid/free'd bitmap here!
-                                A/libc: Fatal signal 6 (SIGABRT), code -1 (SI_QUEUE) in tid 8199 (ocialmediaappv2), pid 8199 (ocialmediaappv2) */
-
         mMap.setOnInfoWindowClickListener {
-            val position = it.tag as ImageBitmap
-            if (position.imageModel.picId != 0) {
+            if (it != currentLocation) {
                 val intent = Intent(this, ProfileActivity::class.java)
-                intent.putExtra("userId", position.imageModel.publisherId)
-                ContextCompat.startActivity(this, intent, null)
+                intent.putExtra("userId", (it.tag as ImageBitmap).imageModel.publisherId)
+                startActivity(intent)
             }
         }
     }

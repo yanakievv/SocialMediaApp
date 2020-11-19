@@ -20,7 +20,6 @@ object PublicPictureContent {
     var initLoaded = false
 
     private lateinit var sharedPref: SharedPreference
-    private var userInfo: UserInfoModel? = null
     private lateinit var databaseInstance: UserDatabase
     private lateinit var userDAO: UserDAO
     private lateinit var imageDao: ImageDAO
@@ -52,17 +51,13 @@ object PublicPictureContent {
         IMAGES.clear()
         SORTED_IMAGES.clear()
 
-        if (userInfo == null) {
-            runBlocking {userInfo = userDAO.getUser(sharedPref.getString("publisherId")!!)}
-        }
-
         var cnt = 0
         var sem = 0
         var empty = false
 
         CoroutineScope(Dispatchers.IO).launch {
-            Log.e("CURRENT_USER", userInfo!!.publisherId)
-            ITEMS = imageDao.getPosts(userInfo!!.publisherId) as MutableList<ImageModel>
+            Log.e("CURRENT_USER", sharedPref.getString("publisherId") as String)
+            ITEMS = imageDao.getPosts(sharedPref.getString("publisherId") as String) as MutableList<ImageModel>
             sem = ITEMS.size
             empty = sem == 0
             for (img in ITEMS) {
@@ -138,7 +133,6 @@ object PublicPictureContent {
     }
 
     fun nuke() {
-        userInfo = null
         initLoaded = false
         IMAGES.clear()
         SORTED_IMAGES.clear()

@@ -1,9 +1,14 @@
 package com.example.socialmediaappv2.profile
 
 import android.content.Context
+import android.util.Log
 import com.example.socialmediaappv2.contract.Contract
 import com.example.socialmediaappv2.data.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+
 
 class ProfileInfoPresenter(var view: Contract.ProfileView?): Contract.ProfileInfoPresenter  {
 
@@ -22,6 +27,8 @@ class ProfileInfoPresenter(var view: Contract.ProfileView?): Contract.ProfileInf
         imageDao = databaseInstance.imageDAO
         runBlocking {  userInfo = userDao.getUser(userId) }
         isCurrentUser = (sharedPref.getString("publisherId") == userId)
+        Log.e("CURRENT_USER", sharedPref.getString("publisherId").toString())
+        Log.e("USER_LOADED", userInfo.publisherId)
     }
 
     override fun reInit(id: String) {
@@ -34,7 +41,10 @@ class ProfileInfoPresenter(var view: Contract.ProfileView?): Contract.ProfileInf
 
     override fun refreshDb() {
         if (isCurrentUser) {
-            runBlocking{ userDao.updateUser(userInfo) }
+            CoroutineScope(Dispatchers.IO).launch {
+                userDao.updateUser(userInfo)
+                imageDao.updatePosts(userInfo.publisherId, userInfo.displayName)
+            }
             sharedPref.save("publisherId", userInfo.publisherId)
             sharedPref.save("displayName", userInfo.displayName)
             sharedPref.save("birthDate", userInfo.birthDate)
