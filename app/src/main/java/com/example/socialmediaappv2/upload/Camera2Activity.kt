@@ -595,12 +595,13 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
             if (it != null) {
                 /*lat = it.latitude
                 long = it.longitude*/
-                lat = nextDouble()
-                long = nextDouble()
+                lat = nextDouble()*1000
+                long = nextDouble()*1000
                 Log.e(
                     GET_LAT_LONG,
-                    "Successful fetch. Coordinates are: ${it.latitude} ${it.longitude}."
+                    "Random coordinates created. Coordinates are: ${lat} ${long}."
                 )
+                Log.e(GET_LAT_LONG, "Go to line 595 in Camera2Activity to use real coords.")
             }
         }
         return true
