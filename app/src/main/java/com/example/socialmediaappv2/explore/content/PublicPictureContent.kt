@@ -86,7 +86,7 @@ object PublicPictureContent {
             while (cnt <= sem) {
                 if (i < cnt) {
                     IMAGES[i].calcDistance(LatLng(latLong[0], latLong[1]))
-                    SORTED_IMAGES.insertAtPlace(IMAGES[i])
+                    SORTED_IMAGES.add(binaryInsert(SORTED_IMAGES, IMAGES[i].getDistance()), IMAGES[i])
                     Log.e("Default", "Inserted item ${IMAGES[i].imageModel.picId}, item number ${i}, cnt = ${cnt}, sem = ${sem}")
                     i++
                 }
@@ -118,23 +118,15 @@ object PublicPictureContent {
         return dx.pow(2) + dy.pow(2) <= R.pow(2)
     }
 
-    private fun binarySearchIterative(input: MutableList<ImageBitmap>, dist: Double): Int {
+    private fun binaryInsert(input: MutableList<ImageBitmap>, dist: Double): Int {
         var low = 0
         var high = input.size - 1
-        var mid: Int
-        while (low <= high) {
-            mid = low + ((high - low) / 2)
-            when {
-                dist > input[mid].getDistance() -> low = mid + 1
-                dist == input[mid].getDistance() -> return mid
-                dist < input[mid].getDistance() -> high = mid - 1
-            }
+        while (low < high) {
+            val mid = (low + high) / 2
+            if (input[mid].getDistance() < dist) low = mid + 1
+            else high = mid
         }
-        return 0
-    }
-
-    private fun MutableList<ImageBitmap>.insertAtPlace(new: ImageBitmap) {
-        this.add(binarySearchIterative(this, new.getDistance()), new)
+        return low
     }
 
     fun nuke() {

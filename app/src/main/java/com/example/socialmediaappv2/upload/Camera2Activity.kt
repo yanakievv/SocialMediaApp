@@ -52,6 +52,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
+import kotlin.random.Random.Default.nextDouble
 
 
 private const val REQUEST_CAMERA_PERMISSION = 200
@@ -186,8 +187,8 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
             @SuppressLint("ClickableViewAccessibility")
             override fun onTouch(v: View?, event: MotionEvent): Boolean {
                 try {
-                    val activity: Activity? = this@Camera2Activity
-                    val manager = activity!!.getSystemService(CAMERA_SERVICE) as CameraManager
+                    val activity: Activity = this@Camera2Activity
+                    val manager = activity.getSystemService(CAMERA_SERVICE) as CameraManager
                     val characteristics = manager.getCameraCharacteristics(cameraId!!)
                     val maxZoom =
                         characteristics[CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM]!! //for LGE LM-G710 its 8.0
@@ -225,7 +226,7 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
         })
     }
 
-    private fun calculateFocusRect(x: Float, y: Float): MeteringRectangle? {
+    private fun calculateFocusRect(x: Float, y: Float): MeteringRectangle {
         val areaSize = 50
         val left: Int = clamp(x.toInt() - areaSize / 2, 0, textureView.width - areaSize)
         val top: Int = clamp(y.toInt() - areaSize / 2, 0, textureView.height - areaSize)
@@ -352,10 +353,10 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
                     SharedPreference.imagesTaken++
                     val angle =
                         if (camera == 1 && getRotation(this@Camera2Activity) == 0F) {
-                            270F + getRotation(this@Camera2Activity)!!
+                            270F + getRotation(this@Camera2Activity)
                         }
                         else {
-                            90F + getRotation(this@Camera2Activity)!!
+                            90F + getRotation(this@Camera2Activity)
                         }
                     val pathD = getExternalFilesDir(null)
                         .toString() + "/" + Environment.DIRECTORY_DCIM + "/"
@@ -550,7 +551,7 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
             openCamera(camera)
         } else {
             textureView.surfaceTextureListener = textureListener
-            textureView.rotation = getRotation(this@Camera2Activity)!!
+            textureView.rotation = getRotation(this@Camera2Activity)
             //Toast.makeText(this@Camera2Activity, getRotation(this@Camera2Activity).toString(), Toast.LENGTH_SHORT).show()
         }
     }
@@ -592,8 +593,10 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
         }
         fusedLocationClient.lastLocation.addOnSuccessListener {
             if (it != null) {
-                lat = it.latitude
-                long = it.longitude
+                /*lat = it.latitude
+                long = it.longitude*/
+                lat = nextDouble()
+                long = nextDouble()
                 Log.e(
                     GET_LAT_LONG,
                     "Successful fetch. Coordinates are: ${it.latitude} ${it.longitude}."
@@ -610,7 +613,7 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
         return sqrt(x * x + y * y.toDouble()).toFloat()
     }
 
-    private fun getRotation(context: Context): Float? {
+    private fun getRotation(context: Context): Float {
         val rotation: Int =
             (context.getSystemService(WINDOW_SERVICE) as WindowManager).defaultDisplay.orientation
         return when (rotation) {

@@ -88,14 +88,17 @@ object PublisherPictureContent {
                 ) as MutableList<ImageModel>
                 SharedPreference.imagesTaken = 0
                 for (i in ITEMS) {
-                    IMAGES.add(ImageBitmap(i))
-                    Log.e("LOAD_FROM", "recent picture")
-                    sharedPref.incInt("posts")
+                    val file = File(i.path)
+                    if (file.exists()) {
+                        IMAGES.add(ImageBitmap(i))
+                        Log.e("LOAD_FROM", "recent picture")
+                        sharedPref.incInt("posts")
+                    }
                 }
                 ITEMS.clear()
                 CoroutineScope(Dispatchers.Main).launch {
                     (context as HomeActivity).notifyAdapter()
-                    (context as HomeActivity).hideSkeleton()
+                    (context).hideSkeleton()
                 }
             }
         }
@@ -105,7 +108,7 @@ object PublisherPictureContent {
     }
 
     private fun updateUser() {
-        val userInfo: UserInfoModel = UserInfoModel(sharedPref.getString("publisherId") as String,
+        val userInfo = UserInfoModel(sharedPref.getString("publisherId") as String,
             sharedPref.getString("displayName") as String,
             sharedPref.getString("birthDate") as String,
             sharedPref.getString("bio") as String,
@@ -120,7 +123,7 @@ object PublisherPictureContent {
 
     fun setProfilePicture(picId: Int) {
         if (isCurrentUser) {
-            val userInfo: UserInfoModel = UserInfoModel(sharedPref.getString("publisherId") as String,
+            val userInfo = UserInfoModel(sharedPref.getString("publisherId") as String,
                 sharedPref.getString("displayName") as String,
                 sharedPref.getString("birthDate") as String,
                 sharedPref.getString("bio") as String,

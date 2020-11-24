@@ -24,6 +24,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.material.slider.Slider
 import com.squareup.picasso.Transformation
 import kotlinx.android.synthetic.main.activity_maps.*
 import kotlinx.android.synthetic.main.activity_maps.explore_button
@@ -40,6 +41,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var mMap: GoogleMap
     private lateinit var sharedPref: SharedPreference
     private lateinit var current: LatLng
+    private var markers: MutableList<Marker> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,6 +67,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         profile_button.setOnClickListener {
             startActivity(Intent(this, ProfileActivity::class.java))
         }
+        continuousSlider.addOnChangeListener(object: Slider.OnChangeListener{
+            override fun onValueChange(slider: Slider, value: Float, fromUser: Boolean) {
+                Log.d("addOnChangeListener", slider.value.toString())
+            }
+        })
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
@@ -81,8 +88,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         for (i in PublicPictureContent.SORTED_IMAGES) {
             i.updateBitmap()
-            val pos = LatLng(i.imageModel.latitude, i.imageModel.longitude)
-            mMap.addMarker(
+            val marker = mMap.addMarker(
                 MarkerOptions().position(LatLng(i.imageModel.latitude, i.imageModel.longitude))
                     .title(i.imageModel.publisherDisplayName).icon(
                         BitmapDescriptorFactory.fromBitmap(
@@ -93,8 +99,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                             }
                         )
                     ).draggable(false)
-            ).tag = i
+            )
+            marker.tag = i
+            markers.add(marker)
             Log.e("IMG_ID", i.imageModel.picId.toString())
+            Log.e("IMG_DIST", i.getDistance().toString())
         }
 
         mMap.setOnInfoWindowClickListener {

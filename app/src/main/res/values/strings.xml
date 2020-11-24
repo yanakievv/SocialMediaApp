@@ -40,4 +40,6 @@
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="title_activity_maps">Map</string>
+    <string name="image_view">Image View</string>
+    <string name="map_view">Map View</string>
 </resources>
