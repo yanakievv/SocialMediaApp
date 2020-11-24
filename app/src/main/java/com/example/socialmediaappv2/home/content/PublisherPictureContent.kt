@@ -87,7 +87,7 @@ object PublisherPictureContent {
                     SharedPreference.imagesTaken
                 ) as MutableList<ImageModel>
                 SharedPreference.imagesTaken = 0
-                for (i in ITEMS) {
+                for (i in ITEMS.reversed()) {
                     val file = File(i.path)
                     if (file.exists()) {
                         IMAGES.add(ImageBitmap(i))
