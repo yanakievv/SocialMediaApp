@@ -29,8 +29,6 @@ object PublisherPictureContent {
 
     fun initLoadImagesFromDatabase(userId: String, context: Context) {
         Log.e("LOAD_FROM_USER", userId)
-//        Log.e("CURRENT_USER", sharedPref.getString("publisherId") as String)
-
 
         sharedPref = SharedPreference(context)
         databaseInstance = UserDatabase.getInstance(context)
@@ -51,7 +49,11 @@ object PublisherPictureContent {
             CoroutineScope(Dispatchers.IO).launch {
                 ITEMS = imageDAO.getPublisherPosts(userId) as MutableList<ImageModel>
                 for (i in ITEMS) {
-                    IMAGES.add(ImageBitmap(i))
+                    val file = File(i.path)
+                    if (file.exists()) {
+                        IMAGES.add(ImageBitmap(i))
+                        Log.e("IO","Loaded image ${i.picId}")
+                    }
                 }
                 ITEMS.clear()
                 CoroutineScope(Dispatchers.Main).launch {

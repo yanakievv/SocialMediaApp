@@ -6,6 +6,7 @@ import com.example.socialmediaappv2.data.*
 import com.example.socialmediaappv2.explore.ExploreActivity
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.*
+import java.io.File
 import java.util.*
 import kotlin.math.*
 
@@ -61,9 +62,13 @@ object PublicPictureContent {
             sem = ITEMS.size
             empty = sem == 0
             for (img in ITEMS) {
-                IMAGES.add(ImageBitmap(img))
-                cnt++
-                Log.e("IO","Loaded image ${img.picId}, cnt = ${cnt}")
+                val file = File(img.path)
+                if (file.exists()) {
+                    IMAGES.add(ImageBitmap(img))
+                    cnt++
+                    Log.e("IO","Loaded image ${img.picId}, cnt = ${cnt}")
+                }
+                else sem--
             }
             CoroutineScope(Dispatchers.Main).launch {
                 Log.e("Main", "Hiding skeleton.")
