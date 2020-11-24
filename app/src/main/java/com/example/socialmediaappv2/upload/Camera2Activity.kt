@@ -595,8 +595,8 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
             if (it != null) {
                 /*lat = it.latitude
                 long = it.longitude*/
-                lat = nextDouble()*1000
-                long = nextDouble()*1000
+                lat = nextDouble()*100
+                long = nextDouble()*100
                 Log.e(
                     GET_LAT_LONG,
                     "Random coordinates created. Coordinates are: ${lat} ${long}."

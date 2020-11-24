@@ -42,6 +42,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var sharedPref: SharedPreference
     private lateinit var current: LatLng
     private var markers: MutableList<Marker> = ArrayList()
+    private var index = 0
+    private var tempIndex = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,7 +71,27 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         continuousSlider.addOnChangeListener(object: Slider.OnChangeListener{
             override fun onValueChange(slider: Slider, value: Float, fromUser: Boolean) {
-                Log.d("addOnChangeListener", slider.value.toString())
+                Log.d("SLIDER", value.toString())
+                if (index < markers.size - 1 && value >= (markers[index].tag as ImageBitmap).getDistance()) {
+                    while ((markers[index].tag as ImageBitmap).getDistance() < value && index < markers.size - 1) {
+                        index++
+                    }
+                    for (i in tempIndex until index) {
+                        markers[i].isVisible = true
+                        Log.e("MARKER_SHOW", (markers[i].tag as ImageBitmap).getDistance().toString())
+                    }
+                    tempIndex = index
+                }
+                else if (index > 0 && value < (markers[index - 1].tag as ImageBitmap).getDistance()) {
+                    while ((markers[index].tag as ImageBitmap).getDistance() > value && index > 0) {
+                        index--
+                    }
+                    for (i in index until tempIndex) {
+                        markers[i].isVisible = false
+                        Log.e("MARKER_HIDE", (markers[i].tag as ImageBitmap).getDistance().toString())
+                    }
+                    tempIndex = index
+                }
             }
         })
     }
@@ -85,7 +107,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             MarkerOptions().position(current).title("Current Location")
         )
         mMap.moveCamera(CameraUpdateFactory.newLatLng(current))
-
         for (i in PublicPictureContent.SORTED_IMAGES) {
             i.updateBitmap()
             val marker = mMap.addMarker(
@@ -101,10 +122,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     ).draggable(false)
             )
             marker.tag = i
+            if (i.getDistance() <= continuousSlider.value) {
+                index++
+            }
+            else marker.isVisible = false
             markers.add(marker)
             Log.e("IMG_ID", i.imageModel.picId.toString())
             Log.e("IMG_DIST", i.getDistance().toString())
+            Log.e("INDEX", index.toString())
+
         }
+        tempIndex = index
 
         mMap.setOnInfoWindowClickListener {
             if (it != currentLocation) {

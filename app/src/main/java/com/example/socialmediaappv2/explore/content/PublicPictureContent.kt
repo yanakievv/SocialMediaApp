@@ -120,7 +120,7 @@ object PublicPictureContent {
 
     private fun binaryInsert(input: MutableList<ImageBitmap>, dist: Double): Int {
         var low = 0
-        var high = input.size - 1
+        var high = input.size
         while (low < high) {
             val mid = (low + high) / 2
             if (input[mid].getDistance() < dist) low = mid + 1
