@@ -73,7 +73,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             override fun onValueChange(slider: Slider, value: Float, fromUser: Boolean) {
                 Log.d("SLIDER", value.toString())
                 if (index < markers.size - 1 && value >= (markers[index].tag as ImageBitmap).getDistance()) {
-                    while ((markers[index].tag as ImageBitmap).getDistance() < value && index < markers.size - 1) {
+                    while (index < markers.size - 1 && (markers[index].tag as ImageBitmap).getDistance() < value) {
                         index++
                     }
                     for (i in tempIndex until index) {
@@ -83,7 +83,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                     tempIndex = index
                 }
                 else if (index > 0 && value < (markers[index - 1].tag as ImageBitmap).getDistance()) {
-                    while ((markers[index].tag as ImageBitmap).getDistance() > value && index > 0) {
+                    while (index > 0 && (markers[index - 1].tag as ImageBitmap).getDistance() > value) {
                         index--
                     }
                     for (i in index until tempIndex) {
