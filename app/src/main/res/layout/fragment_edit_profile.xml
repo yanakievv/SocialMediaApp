@@ -9,29 +9,25 @@
 
     <ImageButton
         android:id="@+id/saveChanges"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:layout_marginTop="50dp"
-        android:layout_marginEnd="75dp"
+        android:layout_width="25dp"
+        android:layout_height="27dp"
+        android:layout_marginEnd="72dp"
         android:layout_marginBottom="5dp"
         android:background="?android:attr/selectableItemBackground"
         android:src="@drawable/ic_baseline_done_24"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editBio" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <ImageButton
         android:id="@+id/cancelChanges"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:layout_marginStart="75dp"
-        android:layout_marginTop="50dp"
+        android:layout_width="28dp"
+        android:layout_height="31dp"
+        android:layout_marginStart="72dp"
         android:layout_marginBottom="5dp"
         android:background="?android:attr/selectableItemBackground"
         android:src="@drawable/ic_baseline_close_24"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editBio" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <EditText
         android:id="@+id/editDisplayName"
