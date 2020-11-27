@@ -41,7 +41,6 @@ import kotlinx.android.synthetic.main.activity_camera2.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
@@ -343,7 +342,7 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
             captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO)
             // Orientation
             @Suppress("DEPRECATION") val rotation = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                applicationContext.display?.rotation
+                this.display?.rotation
             } else {
                 windowManager.defaultDisplay.rotation
             }
@@ -372,7 +371,7 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
 
                     val values = ContentValues()
                     values.put(Media.TITLE, "ImageName")
-                    values.put(Media.CONTENT_TYPE, "image/jpeg")
+                    //values.put(Media.CONTENT_TYPE, "image/jpeg")
                     values.put("_data", mFile.absolutePath)
                     MediaScannerConnection.scanFile(
                         applicationContext, arrayOf(file.toString()),
@@ -593,10 +592,10 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
         }
         fusedLocationClient.lastLocation.addOnSuccessListener {
             if (it != null) {
-                /*lat = it.latitude
-                long = it.longitude*/
-                lat = nextDouble()*100
-                long = nextDouble()*100
+                lat = it.latitude
+                long = it.longitude
+                lat += nextDouble()*10
+                long += nextDouble()*10
                 Log.e(
                     GET_LAT_LONG,
                     "Random coordinates created. Coordinates are: ${lat} ${long}."
