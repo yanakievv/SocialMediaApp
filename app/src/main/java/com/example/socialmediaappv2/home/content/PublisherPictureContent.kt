@@ -92,7 +92,6 @@ object PublisherPictureContent {
                     if (file.exists()) {
                         IMAGES.add(ImageBitmap(i))
                         Log.e("LOAD_FROM", "recent picture")
-                        sharedPref.incInt("posts")
                     }
                 }
                 ITEMS.clear()
