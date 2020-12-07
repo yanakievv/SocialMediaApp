@@ -15,6 +15,7 @@ import com.example.socialmediaappv2.explore.content.PublicPictureContent
 import com.example.socialmediaappv2.home.HomeActivity
 import com.example.socialmediaappv2.home.content.PublisherPictureContent
 import com.example.socialmediaappv2.login.LoginActivity
+import com.example.socialmediaappv2.messaging.chatlist.ChatlistActivity
 import com.example.socialmediaappv2.upload.Camera2Activity
 import kotlinx.android.synthetic.main.activity_home.home_button
 import kotlinx.android.synthetic.main.activity_home.upload_button
@@ -88,6 +89,12 @@ class ProfileActivity : AppCompatActivity(), Contract.ProfileView {
             }
             popup.show()
         }
+        message_list.setOnClickListener {
+            startActivity(Intent(this, ChatlistActivity::class.java))
+        }
+        message.setOnClickListener {
+            //TODO change activity to direct chat with currently viewed user
+        }
     }
 
     override fun onResume(){
@@ -114,11 +121,19 @@ class ProfileActivity : AppCompatActivity(), Contract.ProfileView {
     private fun settingsButtonView(visible: Boolean) {
         if (visible) {
             settings.visibility = View.VISIBLE
+            message_list.visibility = View.VISIBLE
+            message.visibility = View.INVISIBLE
             backButton.visibility = View.INVISIBLE
+            viewPosts.visibility = View.INVISIBLE
+            viewPostsText.visibility = View.INVISIBLE
         }
         else {
             settings.visibility = View.INVISIBLE
+            message_list.visibility = View.INVISIBLE
+            message.visibility = View.VISIBLE
             backButton.visibility = View.VISIBLE
+            viewPosts.visibility = View.VISIBLE
+            viewPostsText.visibility = View.VISIBLE
         }
     }
 
