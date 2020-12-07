@@ -15,11 +15,14 @@ import com.example.socialmediaappv2.explore.content.PublicPictureContent
 import com.example.socialmediaappv2.home.HomeActivity
 import com.example.socialmediaappv2.home.content.PublisherPictureContent
 import com.example.socialmediaappv2.login.LoginActivity
-import com.example.socialmediaappv2.messaging.chatlist.ChatlistActivity
 import com.example.socialmediaappv2.upload.Camera2Activity
+import com.facebook.AccessToken
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import kotlinx.android.synthetic.main.activity_home.home_button
 import kotlinx.android.synthetic.main.activity_home.upload_button
 import kotlinx.android.synthetic.main.activity_profile.*
+import kotlin.math.log
 
 private lateinit var presenter: Contract.ProfileInfoPresenter
 private lateinit var userId: String
@@ -77,7 +80,9 @@ class ProfileActivity : AppCompatActivity(), Contract.ProfileView {
                         PublisherPictureContent.nuke()
                         sharedPref.clearData()
                         finishAffinity()
-                        startActivity(Intent(this, LoginActivity::class.java))
+                        val logoutIntent = Intent(this, LoginActivity::class.java)
+                        logoutIntent.putExtra("logout", true)
+                        startActivity(logoutIntent)
                         true
                     }
                     R.id.edit_profile -> {
@@ -90,7 +95,7 @@ class ProfileActivity : AppCompatActivity(), Contract.ProfileView {
             popup.show()
         }
         message_list.setOnClickListener {
-            startActivity(Intent(this, ChatlistActivity::class.java))
+            //TODO open messages list
         }
         message.setOnClickListener {
             //TODO change activity to direct chat with currently viewed user

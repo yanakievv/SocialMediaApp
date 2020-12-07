@@ -56,15 +56,53 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
 
         //runBlocking{ UserDatabase.getInstance(applicationContext).imageDAO.nukeAll() }
 
+        continueButton.setOnClickListener {
+            PublicPictureContent.nuke()
+            PublisherPictureContent.nuke()
+            sharedPref.clearData()
+            if (getLatLong()) {
+                presenter.init(publisherId!!, publisherDisplayName!!, applicationContext)
+                PublisherPictureContent.isCurrentUser = true
+                val intent = Intent(this, HomeActivity::class.java)
+                startActivity(intent)
+            }
+            else {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                    1
+                )
+            }
+        }
+
 
         val fbAccessToken: AccessToken? = AccessToken.getCurrentAccessToken()
         val googleToken: GoogleSignInAccount? = GoogleSignIn.getLastSignedInAccount(this)
 
-        if (fbAccessToken != null && !fbAccessToken.isExpired) { //currently logged in with fb
+        if (fbAccessToken != null && !fbAccessToken.isExpired && !intent.hasExtra("logout")) { //currently logged in with fb
             updateUI(Profile.getCurrentProfile())
+            continueButton.performClick()
         }
-        else if (googleToken != null) { // logged in with google
+        else if (googleToken != null && !intent.hasExtra("logout")) { // logged in with google
             updateUI(googleToken)
+            continueButton.performClick()
+        }
+        else if (intent.hasExtra("logout") && intent.getBooleanExtra("logout", false)) {
+            val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build()
+            val mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
+            if (GoogleSignIn.getLastSignedInAccount(this) != null) {
+                mGoogleSignInClient.signOut()
+            }
+            else {
+                GraphRequest(
+                    AccessToken.getCurrentAccessToken(), "/me/permissions/", null, HttpMethod.DELETE) {
+                    LoginManager.getInstance().logOut()
+                }.executeAsync()
+            }
+            updateUI()
         }
         else {
             updateUI()
@@ -151,25 +189,6 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
                 )
             }
         }
-
-        continueButton.setOnClickListener {
-            PublicPictureContent.nuke()
-            PublisherPictureContent.nuke()
-            sharedPref.clearData()
-            if (getLatLong()) {
-                presenter.init(publisherId!!, publisherDisplayName!!, applicationContext)
-                PublisherPictureContent.isCurrentUser = true
-                val intent = Intent(this, HomeActivity::class.java)
-                startActivity(intent)
-            }
-            else {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                    1
-                )
-            }
-        }
     }
 
     @SuppressLint("SetTextI18n")
@@ -177,7 +196,7 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
         super.onActivityResult(requestCode, resultCode, data)
         callbackManager.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == RC_SIGN_IN && resultCode != 0) {
+        if (requestCode == RC_SIGN_IN) {
             val account = GoogleSignIn.getLastSignedInAccount(this)
             if (account != null) {
                 Log.e(ACC_TAG, "Google " + account.givenName + " " + account.id)
