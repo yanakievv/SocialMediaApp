@@ -1,30 +1,29 @@
 package com.example.socialmediaappv2.explore
 
-import android.content.BroadcastReceiver
-import android.content.Context
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
-import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.ethanhua.skeleton.RecyclerViewSkeletonScreen
 import com.ethanhua.skeleton.Skeleton
 import com.example.socialmediaappv2.PreviewImageFragment
 import com.example.socialmediaappv2.R
 import com.example.socialmediaappv2.data.ImageBitmap
-import com.example.socialmediaappv2.data.ImageModel
 import com.example.socialmediaappv2.data.SharedPreference
 import com.example.socialmediaappv2.explore.content.PublicPictureContent
 import com.example.socialmediaappv2.home.HomeActivity
 import com.example.socialmediaappv2.profile.ProfileActivity
 import com.example.socialmediaappv2.upload.Camera2Activity
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.android.synthetic.main.activity_explore.*
 import kotlinx.android.synthetic.main.content_explore_scrolling.*
-import java.security.AccessController.getContext
-import kotlin.system.measureTimeMillis
 
 class ExploreActivity : AppCompatActivity() {
 
@@ -32,11 +31,13 @@ class ExploreActivity : AppCompatActivity() {
     private var recyclerView: RecyclerView? = null
     private lateinit var sharedPref: SharedPreference
     private lateinit var skeletonScreen: RecyclerViewSkeletonScreen
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
         sharedPref = SharedPreference(this)
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         setContentView(R.layout.activity_explore)
         setSupportActionBar(findViewById(R.id.toolbar))
@@ -52,7 +53,12 @@ class ExploreActivity : AppCompatActivity() {
             recyclerViewAdapter = (main_fragment.view as RecyclerView).adapter as ExploreRecyclerViewAdapter
         }
 
-        PublicPictureContent.init(this)
+        if (getLatLong() || (sharedPref.getString("lat") != null && sharedPref.getString("long") != null)) {
+            PublicPictureContent.init(this)
+        }
+        else if (sharedPref.getString("lat") == null || sharedPref.getString("long") == null) {
+            Toast.makeText(this, "Problem fetching coordinates. Go to Google Maps, locate your destination successfuly and try again.", Toast.LENGTH_LONG).show()
+        }
 
         findViewById<FloatingActionButton>(R.id.fab).setOnClickListener {
             PublicPictureContent.initForce(this)
@@ -105,5 +111,21 @@ class ExploreActivity : AppCompatActivity() {
             .adapter(recyclerViewAdapter)
             .load(R.layout.fragment_explore_skeleton)
             .show();
+    }
+    private fun getLatLong(): Boolean {
+        var coordsFetched = false
+        if (ActivityCompat.checkSelfPermission(
+                this, Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED) {
+            return coordsFetched
+        }
+        fusedLocationClient.lastLocation.addOnSuccessListener {
+            if (it != null) {
+                sharedPref.save("lat", it.latitude.toString())
+                sharedPref.save("long", it.longitude.toString())
+                coordsFetched = true
+            }
+        }
+        return coordsFetched
     }
 }
