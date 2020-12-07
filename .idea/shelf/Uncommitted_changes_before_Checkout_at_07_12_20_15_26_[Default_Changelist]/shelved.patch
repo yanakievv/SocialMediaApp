@@ -1,0 +1,180 @@
+Index: app/src/main/java/com/example/socialmediaappv2/data/UserChatList.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/example/socialmediaappv2/data/UserChatList.kt	(date 1607106726000)
++++ app/src/main/java/com/example/socialmediaappv2/data/UserChatList.kt	(date 1607106726000)
+@@ -0,0 +1,24 @@
++package com.example.socialmediaappv2.data
++
++import androidx.room.ColumnInfo
++import androidx.room.Entity
++import androidx.room.PrimaryKey
++
++@Entity(tableName = "user_chatlist")
++data class UserChatList(
++    @PrimaryKey()
++    @ColumnInfo(name = "id")
++    var id: String,
++
++    @ColumnInfo(name = "owner_id")
++    var ownerId: String,
++
++    @ColumnInfo(name = "associate_id")
++    var associateId: String,
++
++    @ColumnInfo(name = "profile_pic")
++    var profilePic: String,
++
++    @ColumnInfo(name = "last_message")
++    var lastMessage: TextMessage
++)
+Index: app/src/main/java/com/example/socialmediaappv2/data/TextMessage.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/example/socialmediaappv2/data/TextMessage.kt	(date 1607106530000)
++++ app/src/main/java/com/example/socialmediaappv2/data/TextMessage.kt	(date 1607106530000)
+@@ -0,0 +1,24 @@
++package com.example.socialmediaappv2.data
++
++import androidx.room.ColumnInfo
++import androidx.room.Entity
++import androidx.room.PrimaryKey
++
++@Entity(tableName = "text_message")
++data class TextMessage(
++    @PrimaryKey()
++    @ColumnInfo(name = "id")
++    var messageId: String,
++
++    @ColumnInfo(name = "sender_id")
++    var senderId: String,
++
++    @ColumnInfo(name = "receiver_id")
++    var receiverId: String,
++
++    @ColumnInfo(name = "message")
++    var message: String,
++
++    @ColumnInfo(name = "timestamp")
++    var timestamp: String
++)
+Index: app/src/main/java/com/example/socialmediaappv2/explore/ExploreActivity.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.socialmediaappv2.explore\n\nimport android.content.BroadcastReceiver\nimport android.content.Context\nimport android.content.Intent\nimport android.os.Bundle\nimport android.util.Log\nimport android.view.View\nimport androidx.appcompat.app.AppCompatActivity\nimport androidx.recyclerview.widget.RecyclerView\nimport com.ethanhua.skeleton.RecyclerViewSkeletonScreen\nimport com.ethanhua.skeleton.Skeleton\nimport com.example.socialmediaappv2.PreviewImageFragment\nimport com.example.socialmediaappv2.R\nimport com.example.socialmediaappv2.data.ImageBitmap\nimport com.example.socialmediaappv2.data.ImageModel\nimport com.example.socialmediaappv2.data.SharedPreference\nimport com.example.socialmediaappv2.explore.content.PublicPictureContent\nimport com.example.socialmediaappv2.home.HomeActivity\nimport com.example.socialmediaappv2.profile.ProfileActivity\nimport com.example.socialmediaappv2.upload.Camera2Activity\nimport com.google.android.material.appbar.CollapsingToolbarLayout\nimport com.google.android.material.floatingactionbutton.FloatingActionButton\nimport kotlinx.android.synthetic.main.activity_explore.*\nimport kotlinx.android.synthetic.main.content_explore_scrolling.*\nimport java.security.AccessController.getContext\nimport kotlin.system.measureTimeMillis\n\nclass ExploreActivity : AppCompatActivity() {\n\n    private var recyclerViewAdapter: ExploreRecyclerViewAdapter? = null\n    private var recyclerView: RecyclerView? = null\n    private lateinit var sharedPref: SharedPreference\n    private lateinit var skeletonScreen: RecyclerViewSkeletonScreen\n\n    override fun onCreate(savedInstanceState: Bundle?) {\n\n        super.onCreate(savedInstanceState)\n        sharedPref = SharedPreference(this)\n\n        setContentView(R.layout.activity_explore)\n        setSupportActionBar(findViewById(R.id.toolbar))\n        findViewById<CollapsingToolbarLayout>(R.id.toolbar_layout).title = title\n        image_view.isClickable = false\n        image_view.setTextColor(resources.getColor(R.color.colorBlack))\n        image_view.setBackgroundColor(resources.getColor(R.color.colorPrimaryDark))\n        map_view.setTextColor(resources.getColor(R.color.colorWhite))\n        map_view.setBackgroundColor(resources.getColor(R.color.colorLightBlack))\n\n        if (recyclerViewAdapter == null) {\n            recyclerView = main_fragment.view as RecyclerView\n            recyclerViewAdapter = (main_fragment.view as RecyclerView).adapter as ExploreRecyclerViewAdapter\n        }\n\n        PublicPictureContent.init(this)\n\n        findViewById<FloatingActionButton>(R.id.fab).setOnClickListener {\n            PublicPictureContent.initForce(this)\n        }\n        map_view.setOnClickListener {\n            map_view.setTextColor(resources.getColor(R.color.colorBlack))\n            map_view.setBackgroundColor(resources.getColor(R.color.colorPrimaryDark))\n            image_view.setTextColor(resources.getColor(R.color.colorWhite))\n            image_view.setBackgroundColor(resources.getColor(R.color.colorLightBlack))\n            startActivity(Intent(this, MapsActivity::class.java))\n        }\n        home_button.setOnClickListener {\n            startActivity(Intent(this, HomeActivity::class.java))\n        }\n        upload_button.setOnClickListener {\n            startActivity(Intent(this, Camera2Activity::class.java))\n        }\n        profile_button.setOnClickListener {\n            startActivity(Intent(this, ProfileActivity::class.java))\n        }\n        explore_button.setOnClickListener {\n            finish()\n            startActivity(Intent(this, ExploreActivity::class.java))\n        }\n    }\n\n    fun displayFragment(image: ImageBitmap) {\n        val previewImageFragment = PreviewImageFragment(image)\n        val fragmentManager = supportFragmentManager\n        val fragmentTransaction = fragmentManager.beginTransaction()\n        fragmentTransaction.add(fragment_container.id, previewImageFragment).commit()\n\n    }\n\n    fun hideSkeleton() {\n        image_view.isClickable = true\n        map_view.isClickable = true\n        image_view.background.alpha = 255\n        map_view.background.alpha = 255\n        skeletonScreen.hide()\n    }\n\n    fun showSkeleton() {\n        image_view.isClickable = false\n        map_view.isClickable = false\n        image_view.background.alpha = 64\n        map_view.background.alpha = 64\n        map_view.visibility\n        skeletonScreen = Skeleton.bind(recyclerView)\n            .adapter(recyclerViewAdapter)\n            .load(R.layout.fragment_explore_skeleton)\n            .show();\n    }\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/example/socialmediaappv2/explore/ExploreActivity.kt	(revision cac92ed01098a718563769ed577ceb266e4fdcd1)
++++ app/src/main/java/com/example/socialmediaappv2/explore/ExploreActivity.kt	(date 1607105106000)
+@@ -1,30 +1,28 @@
+ package com.example.socialmediaappv2.explore
+ 
+-import android.content.BroadcastReceiver
+-import android.content.Context
++import android.Manifest
+ import android.content.Intent
++import android.content.pm.PackageManager
+ import android.os.Bundle
+-import android.util.Log
+-import android.view.View
+ import androidx.appcompat.app.AppCompatActivity
++import androidx.core.app.ActivityCompat
+ import androidx.recyclerview.widget.RecyclerView
+ import com.ethanhua.skeleton.RecyclerViewSkeletonScreen
+ import com.ethanhua.skeleton.Skeleton
+ import com.example.socialmediaappv2.PreviewImageFragment
+ import com.example.socialmediaappv2.R
+ import com.example.socialmediaappv2.data.ImageBitmap
+-import com.example.socialmediaappv2.data.ImageModel
+ import com.example.socialmediaappv2.data.SharedPreference
+ import com.example.socialmediaappv2.explore.content.PublicPictureContent
+ import com.example.socialmediaappv2.home.HomeActivity
+ import com.example.socialmediaappv2.profile.ProfileActivity
+ import com.example.socialmediaappv2.upload.Camera2Activity
++import com.google.android.gms.location.FusedLocationProviderClient
++import com.google.android.gms.location.LocationServices
+ import com.google.android.material.appbar.CollapsingToolbarLayout
+ import com.google.android.material.floatingactionbutton.FloatingActionButton
+ import kotlinx.android.synthetic.main.activity_explore.*
+ import kotlinx.android.synthetic.main.content_explore_scrolling.*
+-import java.security.AccessController.getContext
+-import kotlin.system.measureTimeMillis
+ 
+ class ExploreActivity : AppCompatActivity() {
+ 
+@@ -32,11 +30,13 @@
+     private var recyclerView: RecyclerView? = null
+     private lateinit var sharedPref: SharedPreference
+     private lateinit var skeletonScreen: RecyclerViewSkeletonScreen
++    internal lateinit var fusedLocationClient: FusedLocationProviderClient
+ 
+     override fun onCreate(savedInstanceState: Bundle?) {
+ 
+         super.onCreate(savedInstanceState)
+         sharedPref = SharedPreference(this)
++        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+ 
+         setContentView(R.layout.activity_explore)
+         setSupportActionBar(findViewById(R.id.toolbar))
+@@ -52,7 +52,16 @@
+             recyclerViewAdapter = (main_fragment.view as RecyclerView).adapter as ExploreRecyclerViewAdapter
+         }
+ 
+-        PublicPictureContent.init(this)
++        if (getLatLong()) {
++            PublicPictureContent.init(this)
++        }
++        else {
++            ActivityCompat.requestPermissions(
++                this@ExploreActivity,
++                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
++                1
++            )
++        }
+ 
+         findViewById<FloatingActionButton>(R.id.fab).setOnClickListener {
+             PublicPictureContent.initForce(this)
+@@ -106,4 +115,19 @@
+             .load(R.layout.fragment_explore_skeleton)
+             .show();
+     }
++
++    private fun getLatLong(): Boolean {
++        if (ActivityCompat.checkSelfPermission(
++                this, Manifest.permission.ACCESS_FINE_LOCATION
++            ) != PackageManager.PERMISSION_GRANTED) {
++            return false
++        }
++        com.example.socialmediaappv2.login.fusedLocationClient.lastLocation.addOnSuccessListener {
++            if (it != null) {
++                sharedPref.save("lat", it.latitude.toString())
++                sharedPref.save("long", it.longitude.toString())
++            }
++        }
++        return true
++    }
+ }
+\ No newline at end of file
+Index: app/src/main/res/layout/activity_chatlist.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"utf-8\"?>\n<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\n    xmlns:tools=\"http://schemas.android.com/tools\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\"\n    android:fitsSystemWindows=\"true\"\n    tools:context=\".messaging.chatlist.ChatlistActivity\">\n\n    <com.google.android.material.appbar.AppBarLayout\n        android:id=\"@+id/app_bar\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"20dp\"\n        android:fitsSystemWindows=\"true\"\n        android:theme=\"@style/AppTheme\">\n\n    </com.google.android.material.appbar.AppBarLayout>\n\n    <include layout=\"@layout/content_chatlist_scrolling\" />\n    <com.google.android.material.bottomappbar.BottomAppBar\n        android:id=\"@+id/bottom_app_bar\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"58dp\"\n        android:layout_gravity=\"bottom\"\n        android:backgroundTint=\"@color/colorPrimaryDark\"\n        app:layout_constraintBottom_toBottomOf=\"parent\">\n\n        <LinearLayout\n            android:layout_width=\"match_parent\"\n            android:layout_height=\"wrap_content\"\n            android:orientation=\"horizontal\">\n\n            <TextView\n                android:id=\"@+id/home_button\"\n                style=\"?android:attr/borderlessButtonStyle\"\n                android:layout_width=\"0dp\"\n                android:layout_height=\"wrap_content\"\n                android:layout_weight=\"1\"\n                android:background=\"?android:attr/selectableItemBackground\"\n                android:gravity=\"center\"\n                android:orientation=\"vertical\"\n                android:text=\"@string/home\"\n                android:textColor=\"#FFFFFF\"\n                app:drawableTopCompat=\"@drawable/ic_round_home_24\">\n\n            </TextView>\n\n            <TextView\n                android:id=\"@+id/profile_button\"\n                style=\"?android:attr/borderlessButtonStyle\"\n                android:layout_width=\"0dp\"\n                android:layout_height=\"wrap_content\"\n                android:layout_weight=\"1\"\n                android:background=\"?android:attr/selectableItemBackground\"\n                android:gravity=\"center\"\n                android:orientation=\"vertical\"\n                android:text=\"@string/profile\"\n                android:textColor=\"#FFFFFF\"\n                app:drawableTopCompat=\"@drawable/ic_round_person_24\">\n\n            </TextView>\n\n            <TextView\n                android:id=\"@+id/explore_button\"\n                style=\"?android:attr/borderlessButtonStyle\"\n                android:layout_width=\"0dp\"\n                android:layout_height=\"wrap_content\"\n                android:layout_weight=\"1\"\n                android:background=\"?android:attr/selectableItemBackground\"\n                android:gravity=\"center\"\n                android:orientation=\"vertical\"\n                android:text=\"@string/explore\"\n                android:textColor=\"#FFFFFF\"\n                app:drawableTopCompat=\"@drawable/ic_baseline_search_24\">\n\n            </TextView>\n\n            <TextView\n                android:id=\"@+id/upload_button\"\n                style=\"?android:attr/borderlessButtonStyle\"\n                android:layout_width=\"0dp\"\n                android:layout_height=\"wrap_content\"\n                android:layout_weight=\"1\"\n                android:background=\"?android:attr/selectableItemBackground\"\n                android:gravity=\"center\"\n                android:orientation=\"vertical\"\n                android:text=\"@string/upload\"\n                android:textColor=\"#FFFFFF\"\n                app:drawableTopCompat=\"@drawable/ic_baseline_add_a_photo_24\">\n\n            </TextView>\n\n        </LinearLayout>\n\n\n    </com.google.android.material.bottomappbar.BottomAppBar>\n\n</androidx.coordinatorlayout.widget.CoordinatorLayout>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/activity_chatlist.xml	(revision cac92ed01098a718563769ed577ceb266e4fdcd1)
++++ app/src/main/res/layout/activity_chatlist.xml	(date 1607105300000)
+@@ -31,7 +31,7 @@
+             android:orientation="horizontal">
+ 
+             <TextView
+-                android:id="@+id/home_button"
++                android:id="@+id/back_button"
+                 style="?android:attr/borderlessButtonStyle"
+                 android:layout_width="0dp"
+                 android:layout_height="wrap_content"
