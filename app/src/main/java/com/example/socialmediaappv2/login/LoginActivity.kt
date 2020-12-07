@@ -28,6 +28,11 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.firebase.auth.FacebookAuthProvider
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import kotlinx.android.synthetic.main.activity_login.*
 
 
@@ -43,6 +48,7 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
     private lateinit var callbackManager: CallbackManager
     private var publisherId: String? = null
     private var publisherDisplayName: String? = null
+    private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,6 +59,7 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
         callbackManager = CallbackManager.Factory.create()
         Stetho.initializeWithDefaults(this)
         setPresenter(UserInfoPresenter(this))
+        auth = Firebase.auth
 
         //runBlocking{ UserDatabase.getInstance(applicationContext).imageDAO.nukeAll() }
 
@@ -80,11 +87,33 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
         val googleToken: GoogleSignInAccount? = GoogleSignIn.getLastSignedInAccount(this)
 
         if (fbAccessToken != null && !fbAccessToken.isExpired && !intent.hasExtra("logout")) { //currently logged in with fb
-            updateUI(Profile.getCurrentProfile())
-            continueButton.performClick()
+            var credential = FacebookAuthProvider.getCredential(fbAccessToken.token)
+            auth.signInWithCredential(credential)
+                .addOnCompleteListener(this@LoginActivity) { task ->
+                    if (task.isSuccessful) {
+                        Log.e("Firebase", "signInWithCredential:success")
+                        updateUI(Profile.getCurrentProfile())
+                        continueButton.performClick()
+                    } else {
+                        Log.e("Firebase", "signInWithCredential:failure", task.exception)
+                        Toast.makeText(baseContext, "Authentication failed.",
+                            Toast.LENGTH_SHORT).show()
+                        updateUI()
+                    }
+                }
         }
         else if (googleToken != null && !intent.hasExtra("logout")) { // logged in with google
-            updateUI(googleToken)
+            val credential = GoogleAuthProvider.getCredential(googleToken.idToken, null)
+            auth.signInWithCredential(credential)
+                .addOnCompleteListener(this) { task ->
+                    if (task.isSuccessful) {
+                        Log.e("Firebase", "signInWithCredential:success")
+                        updateUI(googleToken)
+                    } else {
+                        Log.e("Firebase", "signInWithCredential:failure", task.exception)
+                        updateUI()
+                    }
+                }
             continueButton.performClick()
         }
         else if (intent.hasExtra("logout") && intent.getBooleanExtra("logout", false)) {
@@ -168,7 +197,20 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
                                             "FB " + currentProfile.firstName + " " + currentProfile.id
                                         )
                                         profileTracker.stopTracking()
-                                        updateUI(currentProfile)
+                                        val token = AccessToken.getCurrentAccessToken()
+                                        var credential = FacebookAuthProvider.getCredential(token.token)
+                                        auth.signInWithCredential(credential)
+                                            .addOnCompleteListener(this@LoginActivity) { task ->
+                                                if (task.isSuccessful) {
+                                                    Log.e("Firebase", "signInWithCredential:success")
+                                                    updateUI(currentProfile)
+                                                } else {
+                                                    Log.e("Firebase", "signInWithCredential:failure", task.exception)
+                                                    Toast.makeText(baseContext, "Authentication failed.",
+                                                        Toast.LENGTH_SHORT).show()
+                                                    updateUI()
+                                                }
+                                            }
                                     }
                                 }
 
@@ -200,6 +242,17 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
             val account = GoogleSignIn.getLastSignedInAccount(this)
             if (account != null) {
                 Log.e(ACC_TAG, "Google " + account.givenName + " " + account.id)
+                val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+                auth.signInWithCredential(credential)
+                    .addOnCompleteListener(this) { task ->
+                        if (task.isSuccessful) {
+                            Log.e("Firebase", "signInWithCredential:success")
+                            updateUI(account)
+                        } else {
+                            Log.e("Firebase", "signInWithCredential:failure", task.exception)
+                            updateUI()
+                        }
+                    }
                 updateUI(account)
             }
         }

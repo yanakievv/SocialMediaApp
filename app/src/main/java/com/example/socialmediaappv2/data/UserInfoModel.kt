@@ -24,4 +24,6 @@ data class UserInfoModel(
 
     @ColumnInfo(name = "posts")
     var posts: Int
-)
+) {
+    constructor(): this("", "", "", "", 0, 0)
+}
