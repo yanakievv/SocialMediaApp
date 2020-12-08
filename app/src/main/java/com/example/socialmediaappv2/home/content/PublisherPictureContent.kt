@@ -132,6 +132,11 @@ object PublisherPictureContent {
             CoroutineScope(Dispatchers.IO).launch {
                 userDAO.updateUser(userInfo)
             }
+            for (i in IMAGES) {
+                if (i.imageModel.picId == picId) {
+                    FirestoreUtil.updateCurrentUser(userInfo, i.imageModel.path)
+                }
+            }
         }
     }
 

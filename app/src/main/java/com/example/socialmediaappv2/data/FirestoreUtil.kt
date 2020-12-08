@@ -1,9 +1,12 @@
 package com.example.socialmediaappv2.data
 
+import android.service.autofill.UserData
+import android.util.Log
 import com.example.socialmediaappv2.data.firebase.UserModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.runBlocking
 
 object FirestoreUtil {
     private val firestoreInstance: FirebaseFirestore by lazy { FirebaseFirestore.getInstance()}
@@ -24,12 +27,18 @@ object FirestoreUtil {
         }
     }
 
+    fun updateCurrentUser(user: UserInfoModel, profilePicPath: String? = null) {
+        updateCurrentUser(user.displayName, user.birthDate, user.bio, profilePicPath)
+    }
+
     fun updateCurrentUser(name: String = "", birth: String, bio: String = "", profilePicturePath: String? = null) {
         val fieldMap = mutableMapOf<String, Any>()
+        Log.e("PICPATH", profilePicturePath.toString())
         if (name.isNotBlank()) fieldMap["name"] = name
         if (birth.isNotBlank()) fieldMap["birth"] = birth
         if (bio.isNotBlank()) fieldMap["bio"] = bio
-        if (profilePicturePath != null) fieldMap["profilePic"]
+        if (profilePicturePath != null) fieldMap["profilePicturePath"] = profilePicturePath
+        currentUserDoc.update(fieldMap)
     }
 
     fun getCurrentUser(onComplete: (UserModel) -> Unit) {

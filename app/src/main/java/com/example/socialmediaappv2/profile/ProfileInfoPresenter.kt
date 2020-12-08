@@ -44,6 +44,7 @@ class ProfileInfoPresenter(var view: Contract.ProfileView?): Contract.ProfileInf
             CoroutineScope(Dispatchers.IO).launch {
                 userDao.updateUser(userInfo)
                 imageDao.updatePosts(userInfo.publisherId, userInfo.displayName)
+                FirestoreUtil.updateCurrentUser(userInfo)
             }
             sharedPref.save("publisherId", userInfo.publisherId)
             sharedPref.save("displayName", userInfo.displayName)
