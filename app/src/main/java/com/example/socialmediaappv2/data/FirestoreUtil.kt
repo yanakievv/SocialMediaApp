@@ -18,7 +18,7 @@ object FirestoreUtil {
         currentUserDoc.get().addOnSuccessListener {
             if (!it.exists()) {
                 val firebaseCurrentUser = FirebaseAuth.getInstance().currentUser?: throw java.lang.NullPointerException("FirebaseAuth.getInstance().currentUser returned null")
-                val newUser = UserModel(firebaseCurrentUser.displayName ?: "", "", "", null)
+                val newUser = UserModel(firebaseCurrentUser.displayName ?: "", "Private", "", null, "0")
                 currentUserDoc.set(newUser).addOnSuccessListener {
                     onComplete()
                 }
@@ -27,17 +27,22 @@ object FirestoreUtil {
         }
     }
 
-    fun updateCurrentUser(user: UserInfoModel, profilePicPath: String? = null) {
-        updateCurrentUser(user.displayName, user.birthDate, user.bio, profilePicPath)
+    fun updateCurrentUser(user: UserModel) {
+        updateCurrentUser(user.name, user.birth, user.bio, user.profilePicturePath, user.posts)
     }
 
-    fun updateCurrentUser(name: String = "", birth: String, bio: String = "", profilePicturePath: String? = null) {
+    fun updateCurrentUser(user: UserInfoModel, profilePicPath: String? = null) {
+        updateCurrentUser(user.displayName, user.birthDate, user.bio, profilePicPath, user.posts.toString())
+    }
+
+    fun updateCurrentUser(name: String = "", birth: String = "", bio: String = "", profilePicturePath: String? = null, posts: String = "") {
         val fieldMap = mutableMapOf<String, Any>()
-        Log.e("PICPATH", profilePicturePath.toString())
+
         if (name.isNotBlank()) fieldMap["name"] = name
         if (birth.isNotBlank()) fieldMap["birth"] = birth
         if (bio.isNotBlank()) fieldMap["bio"] = bio
         if (profilePicturePath != null) fieldMap["profilePicturePath"] = profilePicturePath
+        if (posts.isNotBlank()) fieldMap["posts"] = posts
         currentUserDoc.update(fieldMap)
     }
 
@@ -45,5 +50,9 @@ object FirestoreUtil {
         currentUserDoc.get().addOnSuccessListener {
             it.toObject(UserModel::class.java)?.let { it1 -> onComplete(it1) }
         }
+    }
+
+    fun getUID(): String {
+        return currentUserDoc.id
     }
 }
