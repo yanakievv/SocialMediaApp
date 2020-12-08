@@ -31,4 +31,10 @@ object FirestoreUtil {
         if (bio.isNotBlank()) fieldMap["bio"] = bio
         if (profilePicturePath != null) fieldMap["profilePic"]
     }
+
+    fun getCurrentUser(onComplete: (UserModel) -> Unit) {
+        currentUserDoc.get().addOnSuccessListener {
+            it.toObject(UserModel::class.java)?.let { it1 -> onComplete(it1) }
+        }
+    }
 }

@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat
 import com.example.socialmediaappv2.R
 import com.example.socialmediaappv2.UserInfoPresenter
 import com.example.socialmediaappv2.contract.Contract
+import com.example.socialmediaappv2.data.FirestoreUtil
 import com.example.socialmediaappv2.data.SharedPreference
 import com.example.socialmediaappv2.explore.content.PublicPictureContent
 import com.example.socialmediaappv2.home.HomeActivity
@@ -70,8 +71,11 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
             if (getLatLong()) {
                 presenter.init(publisherId!!, publisherDisplayName!!, applicationContext)
                 PublisherPictureContent.isCurrentUser = true
-                val intent = Intent(this, HomeActivity::class.java)
-                startActivity(intent)
+                FirestoreUtil.initUserFirstTime {
+                    val intent = Intent(this, HomeActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK and Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                }
             }
             else {
                 ActivityCompat.requestPermissions(
@@ -96,8 +100,10 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
                         continueButton.performClick()
                     } else {
                         Log.e("Firebase", "signInWithCredential:failure", task.exception)
-                        Toast.makeText(baseContext, "Authentication failed.",
-                            Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            baseContext, "Authentication failed.",
+                            Toast.LENGTH_SHORT
+                        ).show()
                         updateUI()
                     }
                 }
@@ -127,7 +133,8 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
             }
             else {
                 GraphRequest(
-                    AccessToken.getCurrentAccessToken(), "/me/permissions/", null, HttpMethod.DELETE) {
+                    AccessToken.getCurrentAccessToken(), "/me/permissions/", null, HttpMethod.DELETE
+                ) {
                     LoginManager.getInstance().logOut()
                 }.executeAsync()
             }
@@ -162,7 +169,8 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
             // Facebook Logout
             if (AccessToken.getCurrentAccessToken() != null) {
                 GraphRequest(
-                    AccessToken.getCurrentAccessToken(), "/me/permissions/", null, HttpMethod.DELETE) {
+                    AccessToken.getCurrentAccessToken(), "/me/permissions/", null, HttpMethod.DELETE
+                ) {
                     LoginManager.getInstance().logOut()
                 }.executeAsync()
                 updateUI()
@@ -198,16 +206,26 @@ class LoginActivity : AppCompatActivity(), Contract.MainView {
                                         )
                                         profileTracker.stopTracking()
                                         val token = AccessToken.getCurrentAccessToken()
-                                        var credential = FacebookAuthProvider.getCredential(token.token)
+                                        var credential =
+                                            FacebookAuthProvider.getCredential(token.token)
                                         auth.signInWithCredential(credential)
                                             .addOnCompleteListener(this@LoginActivity) { task ->
                                                 if (task.isSuccessful) {
-                                                    Log.e("Firebase", "signInWithCredential:success")
+                                                    Log.e(
+                                                        "Firebase",
+                                                        "signInWithCredential:success"
+                                                    )
                                                     updateUI(currentProfile)
                                                 } else {
-                                                    Log.e("Firebase", "signInWithCredential:failure", task.exception)
-                                                    Toast.makeText(baseContext, "Authentication failed.",
-                                                        Toast.LENGTH_SHORT).show()
+                                                    Log.e(
+                                                        "Firebase",
+                                                        "signInWithCredential:failure",
+                                                        task.exception
+                                                    )
+                                                    Toast.makeText(
+                                                        baseContext, "Authentication failed.",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
                                                     updateUI()
                                                 }
                                             }

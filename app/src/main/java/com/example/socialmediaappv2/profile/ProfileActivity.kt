@@ -82,6 +82,7 @@ class ProfileActivity : AppCompatActivity(), Contract.ProfileView {
                         finishAffinity()
                         val logoutIntent = Intent(this, LoginActivity::class.java)
                         logoutIntent.putExtra("logout", true)
+                        logoutIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK and Intent.FLAG_ACTIVITY_CLEAR_TASK
                         startActivity(logoutIntent)
                         true
                     }
