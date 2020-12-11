@@ -1,4 +1,4 @@
-package com.example.socialmediaappv2.data
+package com.example.socialmediaappv2.data.roomdb
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

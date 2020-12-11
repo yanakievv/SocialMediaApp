@@ -1,7 +1,6 @@
 package com.example.socialmediaappv2
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.os.Bundle
 import android.os.Handler
@@ -13,7 +12,6 @@ import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.example.socialmediaappv2.data.ImageBitmap
-import com.example.socialmediaappv2.data.ImageModel
 import kotlinx.android.synthetic.main.fragment_preview_image.*
 
 /**

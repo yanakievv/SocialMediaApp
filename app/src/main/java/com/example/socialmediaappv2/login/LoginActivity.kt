@@ -14,7 +14,7 @@ import androidx.core.content.ContextCompat
 import com.example.socialmediaappv2.R
 import com.example.socialmediaappv2.UserInfoPresenter
 import com.example.socialmediaappv2.contract.Contract
-import com.example.socialmediaappv2.data.FirestoreUtil
+import com.example.socialmediaappv2.data.firebase.FirestoreUtil
 import com.example.socialmediaappv2.data.SharedPreference
 import com.example.socialmediaappv2.explore.content.PublicPictureContent
 import com.example.socialmediaappv2.home.HomeActivity

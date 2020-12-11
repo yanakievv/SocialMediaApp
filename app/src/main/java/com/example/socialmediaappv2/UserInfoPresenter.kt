@@ -2,11 +2,12 @@ package com.example.socialmediaappv2
 
 import android.content.Context
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import com.example.socialmediaappv2.contract.Contract
 import com.example.socialmediaappv2.data.*
+import com.example.socialmediaappv2.data.firebase.FirestoreUtil
 import com.example.socialmediaappv2.data.firebase.UserModel
+import com.example.socialmediaappv2.data.roomdb.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -28,17 +29,19 @@ class UserInfoPresenter(var view: Contract.MainView?): Contract.UserInfoPresente
 
     override fun init(id: String, displayName: String, context: Context) {
         sharedPref = SharedPreference(context)
-        FirestoreUtil.initUserFirstTime {
-            FirestoreUtil.getCurrentUser {
-                userInfo = it
+        databaseInstance = UserDatabase.getInstance(context)
+        imageDao = databaseInstance.imageDAO
+            FirestoreUtil.getCurrentUser { userModel ->
+                userInfo = userModel
+                sharedPref.save("publisherId", FirestoreUtil.getUID())
+                sharedPref.save("displayName", userInfo.name)
+                sharedPref.save("birthDate", userInfo.birth)
+                sharedPref.save("bio", userInfo.bio)
+                userInfo.profilePicturePath?.let { sharedPref.save("profilePic", it) }
+                sharedPref.save("posts", userInfo.posts)
             }
-        }
-        sharedPref.save("publisherId", FirestoreUtil.getUID())
-        sharedPref.save("displayName", userInfo.name)
-        sharedPref.save("birthDate", userInfo.birth)
-        sharedPref.save("bio", userInfo.bio)
-        userInfo.profilePicturePath?.let { sharedPref.save("profilePic", it) }
-        sharedPref.save("posts", localUserInfo.posts)
+
+
 
     }
 
@@ -64,26 +67,25 @@ class UserInfoPresenter(var view: Contract.MainView?): Contract.UserInfoPresente
     @RequiresApi(Build.VERSION_CODES.O)
     override fun addPost(newPost: String, rotation: Int, latLong: DoubleArray, context: Context) {
 
-        //TODO add post to firebase storage and remove local implementation
+        databaseInstance = UserDatabase.getInstance(context)
+        imageDao = databaseInstance.imageDAO
 
         val formatted = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"))
         CoroutineScope(Dispatchers.IO).launch {
             imageDao.addImage(
                 ImageModel(
                     0,
-                    localUserInfo.publisherId,
+                    FirestoreUtil.getUID(),
                     newPost,
-                    localUserInfo.displayName,
+                    userInfo.name,
                     formatted,
                     latLong[0],
                     latLong[1],
                     rotation
                 )
             )
-            localUserInfo.posts++
             refreshDb()
         }
-        sharedPref.incInt("posts")
     }
 
     override fun getCurrentUser(): UserModel {

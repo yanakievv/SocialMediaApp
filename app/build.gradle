@@ -78,7 +78,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-storage:19.2.0'
     implementation 'com.firebaseui:firebase-ui-storage:3.3.1'
 
-    //Might need glide, ep2-1:39
+    implementation 'com.github.bumptech.glide:glide:4.11.0'
+    kapt 'com.github.bumptech.glide:compiler:4.11.0'
 
     apply plugin: 'com.google.gms.google-services'
 

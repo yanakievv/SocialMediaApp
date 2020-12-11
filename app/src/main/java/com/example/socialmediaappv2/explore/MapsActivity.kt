@@ -5,11 +5,9 @@ import android.graphics.*
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import com.example.socialmediaappv2.PreviewImageFragment
 import com.example.socialmediaappv2.R
 import com.example.socialmediaappv2.data.ImageBitmap
-import com.example.socialmediaappv2.data.ImageModel
 import com.example.socialmediaappv2.data.SharedPreference
 import com.example.socialmediaappv2.explore.content.PublicPictureContent
 import com.example.socialmediaappv2.home.HomeActivity
@@ -17,7 +15,6 @@ import com.example.socialmediaappv2.profile.ProfileActivity
 import com.example.socialmediaappv2.upload.Camera2Activity
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.GoogleMap.OnMarkerDragListener
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory

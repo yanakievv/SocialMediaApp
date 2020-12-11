@@ -1,12 +1,9 @@
-package com.example.socialmediaappv2.data
+package com.example.socialmediaappv2.data.firebase
 
-import android.service.autofill.UserData
-import android.util.Log
-import com.example.socialmediaappv2.data.firebase.UserModel
+import com.example.socialmediaappv2.data.roomdb.UserInfoModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.runBlocking
 
 object FirestoreUtil {
     private val firestoreInstance: FirebaseFirestore by lazy { FirebaseFirestore.getInstance()}

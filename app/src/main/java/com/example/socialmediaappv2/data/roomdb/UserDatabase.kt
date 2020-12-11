@@ -1,4 +1,4 @@
-package com.example.socialmediaappv2.data
+package com.example.socialmediaappv2.data.roomdb
 
 import android.content.Context
 import androidx.room.Database

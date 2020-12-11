@@ -91,7 +91,7 @@ class HomeActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         Log.e("HomeActivity", "onResume")
-        if (PublisherPictureContent.isCurrentUser && sharedPref.getInt("posts") != 0) {
+        if (PublisherPictureContent.isCurrentUser && sharedPref.getString("posts")?.toInt() != 0) {
             PublisherPictureContent.loadRecentImages(sharedPref.getString("publisherId")!!, this)
         }
 

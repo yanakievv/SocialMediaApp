@@ -3,6 +3,10 @@ package com.example.socialmediaappv2.explore.content
 import android.content.Context
 import android.util.Log
 import com.example.socialmediaappv2.data.*
+import com.example.socialmediaappv2.data.roomdb.ImageDAO
+import com.example.socialmediaappv2.data.roomdb.ImageModel
+import com.example.socialmediaappv2.data.roomdb.UserDAO
+import com.example.socialmediaappv2.data.roomdb.UserDatabase
 import com.example.socialmediaappv2.explore.ExploreActivity
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.*
@@ -64,7 +68,7 @@ object PublicPictureContent {
             for (img in ITEMS) {
                 val file = File(img.path)
                 if (file.exists()) {
-                    IMAGES.add(ImageBitmap(img))
+                    IMAGES.add(ImageBitmap(img, context))
                     cnt++
                     Log.e("IO","Loaded image ${img.picId}, cnt = ${cnt}")
                 }
