@@ -34,6 +34,8 @@ import com.example.socialmediaappv2.R
 import com.example.socialmediaappv2.UserInfoPresenter
 import com.example.socialmediaappv2.contract.Contract
 import com.example.socialmediaappv2.data.SharedPreference
+import com.example.socialmediaappv2.data.firebase.FirestoreUtil
+import com.example.socialmediaappv2.data.firebase.StorageUtil
 import com.example.socialmediaappv2.home.HomeActivity
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -132,6 +134,7 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
             } catch (e: IOException) {
                 e.printStackTrace()
             }
+            StorageUtil.uploadPhoto(tempPhoto)
         }
     }
 
@@ -381,8 +384,11 @@ class Camera2Activity : AppCompatActivity(), Contract.MainView {
                     val cr: ContentResolver = applicationContext.contentResolver
                     cr.insert(Media.EXTERNAL_CONTENT_URI, values)
                     mBackgroundHandler!!.post(ImageSaver(it.acquireNextImage(), mFile, angle))
+
+                    val link = "${FirestoreUtil.getUID()}/pictures/ImageName_${timeStamp}.jpeg"
+
                     presenter.addPost(
-                        mFile.absolutePath,
+                        link,
                         if (camera == 0) 1 + rotation else -1 - rotation,
                         doubleArrayOf(
                             lat,

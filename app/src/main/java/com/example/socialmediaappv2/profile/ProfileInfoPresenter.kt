@@ -4,6 +4,8 @@ import android.content.Context
 import android.util.Log
 import com.example.socialmediaappv2.contract.Contract
 import com.example.socialmediaappv2.data.*
+import com.example.socialmediaappv2.data.firebase.FirestoreUtil
+import com.example.socialmediaappv2.data.roomdb.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -44,6 +46,7 @@ class ProfileInfoPresenter(var view: Contract.ProfileView?): Contract.ProfileInf
             CoroutineScope(Dispatchers.IO).launch {
                 userDao.updateUser(userInfo)
                 imageDao.updatePosts(userInfo.publisherId, userInfo.displayName)
+                FirestoreUtil.updateCurrentUser(userInfo)
             }
             sharedPref.save("publisherId", userInfo.publisherId)
             sharedPref.save("displayName", userInfo.displayName)

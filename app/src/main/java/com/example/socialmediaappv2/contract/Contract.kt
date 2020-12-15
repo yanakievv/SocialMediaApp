@@ -1,9 +1,8 @@
 package com.example.socialmediaappv2.contract
 
 import android.content.Context
-import android.graphics.Bitmap
-import com.example.socialmediaappv2.data.ImageModel
-import com.example.socialmediaappv2.data.UserInfoModel
+import com.example.socialmediaappv2.data.roomdb.ImageModel
+import com.example.socialmediaappv2.data.firebase.UserModel
 
 interface Contract {
     interface ProfileView: BaseView<ProfileInfoPresenter> {
@@ -21,9 +20,7 @@ interface Contract {
         fun getUserPosts(): List<ImageModel>?
         fun addPost(newPost: String, rotation: Int, latLong: DoubleArray, context: Context)
 
-        fun getCurrentUser(): UserInfoModel
-
-        fun setProfilePicture(picId: Int)
+        fun getCurrentUser(): UserModel
 
 
     }

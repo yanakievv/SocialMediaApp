@@ -1,21 +1,39 @@
 package com.example.socialmediaappv2.data
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.drawable.Drawable
+import androidx.annotation.Nullable
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
+import com.example.socialmediaappv2.data.firebase.StorageUtil
+import com.example.socialmediaappv2.data.roomdb.ImageModel
+import com.example.socialmediaappv2.glide.GlideApp
 import com.google.android.gms.maps.model.LatLng
+import java.io.InputStream
+import java.net.URL
 import kotlin.math.asin
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-class ImageBitmap(val imageModel: ImageModel) {
-    private var thumbnail: Bitmap?
-    private var bitmap: Bitmap?
+class ImageBitmap(val imageModel: ImageModel, val context: Context) {
+    private var thumbnail: Bitmap? = null
+    private var bitmap: Bitmap? = null
     private var distance: Double = 0.0
 
     init {
-        bitmap = BitmapFactory.decodeFile(imageModel.path)
-        thumbnail = makeThumbnail(imageModel.path, 256, 144)
+        GlideApp.with(context).asBitmap().load(StorageUtil.pathToReference(imageModel.path)).into(object : CustomTarget<Bitmap?>() {
+            override fun onResourceReady(resource: Bitmap, @Nullable transition: Transition<in Bitmap?>?) {
+                bitmap = resource
+                //thumbnail = makeThumbnail(imageModel.path, 256, 144)
+            }
+
+            override fun onLoadCleared(placeholder: Drawable?) {
+
+            }
+        })
     }
 
     operator fun compareTo(rhs: ImageBitmap): Int {
@@ -32,7 +50,7 @@ class ImageBitmap(val imageModel: ImageModel) {
     private fun makeThumbnail(path: String, w: Int, h: Int): Bitmap {
         return BitmapFactory.Options().run {
             inJustDecodeBounds = true
-            val bmp = BitmapFactory.decodeFile(path, this)
+            val bmp = BitmapFactory.decodeStream(URL(path).content as InputStream, null, this)
             inSampleSize = calculateInSampleSize(this, w, h)
             inJustDecodeBounds = false
             BitmapFactory.decodeFile(path, this)

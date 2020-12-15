@@ -38,11 +38,11 @@ class SharedPreference(val context: Context) {
         }
 
         fun incInt(key: String) {
-            save(key, getInt(key) + 1)
+            save(key, (getString(key)?.toInt()?.plus(1)).toString())
         }
 
         fun decInt(key: String) {
-            save(key, getInt(key) - 1)
+            save(key, (getString(key)?.toInt()?.minus(1)).toString())
         }
 
         fun getBoolean(key: String): Boolean {

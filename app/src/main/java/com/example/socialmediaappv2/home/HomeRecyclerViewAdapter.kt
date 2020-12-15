@@ -1,7 +1,6 @@
 package com.example.socialmediaappv2.home
 
 import android.content.Context
-import android.graphics.BitmapFactory
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,7 +10,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.socialmediaappv2.R
 import com.example.socialmediaappv2.data.ImageBitmap
-import com.example.socialmediaappv2.data.ImageModel
+import com.example.socialmediaappv2.data.firebase.StorageUtil
+import com.example.socialmediaappv2.glide.GlideApp
 import com.example.socialmediaappv2.home.content.PublisherPictureContent
 
 

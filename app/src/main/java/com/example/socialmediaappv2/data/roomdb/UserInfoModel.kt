@@ -1,4 +1,4 @@
-package com.example.socialmediaappv2.data
+package com.example.socialmediaappv2.data.roomdb
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
@@ -24,4 +24,6 @@ data class UserInfoModel(
 
     @ColumnInfo(name = "posts")
     var posts: Int
-)
+) {
+    constructor(): this("", "", "", "", 0, 0)
+}

@@ -3,11 +3,15 @@ package com.example.socialmediaappv2.home.content
 import android.content.Context
 import android.util.Log
 import com.example.socialmediaappv2.data.*
+import com.example.socialmediaappv2.data.firebase.FirestoreUtil
+import com.example.socialmediaappv2.data.roomdb.*
 import com.example.socialmediaappv2.home.HomeActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
+import java.net.HttpURLConnection
+import java.net.URL
 import java.util.*
 
 object PublisherPictureContent {
@@ -19,7 +23,6 @@ object PublisherPictureContent {
 
 
     private lateinit var sharedPref: SharedPreference
-    //private var userInfo: UserInfoModel? = null
     private lateinit var databaseInstance: UserDatabase
     private lateinit var userDAO: UserDAO
     private lateinit var imageDAO: ImageDAO
@@ -49,11 +52,8 @@ object PublisherPictureContent {
             CoroutineScope(Dispatchers.IO).launch {
                 ITEMS = imageDAO.getPublisherPosts(userId) as MutableList<ImageModel>
                 for (i in ITEMS) {
-                    val file = File(i.path)
-                    if (file.exists()) {
-                        IMAGES.add(ImageBitmap(i))
-                        Log.e("IO","Loaded image ${i.picId}")
-                    }
+                    IMAGES.add(ImageBitmap(i, context))
+                    Log.e("IO","Loaded image ${i.path}")
                 }
                 ITEMS.clear()
                 CoroutineScope(Dispatchers.Main).launch {
@@ -88,11 +88,8 @@ object PublisherPictureContent {
                 ) as MutableList<ImageModel>
                 SharedPreference.imagesTaken = 0
                 for (i in ITEMS.reversed()) {
-                    val file = File(i.path)
-                    if (file.exists()) {
-                        IMAGES.add(ImageBitmap(i))
-                        Log.e("LOAD_FROM", "recent picture")
-                    }
+                    IMAGES.add(ImageBitmap(i, context))
+                    Log.e("LOAD_FROM", "recent picture")
                 }
                 ITEMS.clear()
                 CoroutineScope(Dispatchers.Main).launch {
@@ -131,6 +128,11 @@ object PublisherPictureContent {
             )
             CoroutineScope(Dispatchers.IO).launch {
                 userDAO.updateUser(userInfo)
+            }
+            for (i in IMAGES) {
+                if (i.imageModel.picId == picId) {
+                    FirestoreUtil.updateCurrentUser(userInfo, i.imageModel.path)
+                }
             }
         }
     }

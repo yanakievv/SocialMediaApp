@@ -1,6 +1,7 @@
-package com.example.socialmediaappv2.data
+package com.example.socialmediaappv2.data.roomdb
 
 import androidx.room.*
+import com.example.socialmediaappv2.data.roomdb.UserInfoModel
 
 @Dao
 interface UserDAO {

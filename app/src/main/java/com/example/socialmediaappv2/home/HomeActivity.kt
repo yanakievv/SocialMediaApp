@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.ethanhua.skeleton.RecyclerViewSkeletonScreen
@@ -17,6 +18,7 @@ import com.example.socialmediaappv2.home.content.PublisherPictureContent
 import com.example.socialmediaappv2.profile.ProfileActivity
 import com.example.socialmediaappv2.upload.Camera2Activity
 import com.google.android.material.appbar.CollapsingToolbarLayout
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.activity_home.explore_button
 import kotlinx.android.synthetic.main.activity_home.fab
 import kotlinx.android.synthetic.main.activity_home.fragment_container
@@ -48,6 +50,7 @@ class HomeActivity : AppCompatActivity() {
             title = intent.getStringExtra("displayName") + "'s Posts"
         }
 
+        Log.e("Firebase", FirebaseAuth.getInstance().uid.toString())
         setContentView(R.layout.activity_home)
         setSupportActionBar(findViewById(R.id.toolbar))
         findViewById<CollapsingToolbarLayout>(R.id.toolbar_layout).title = title
@@ -88,7 +91,7 @@ class HomeActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         Log.e("HomeActivity", "onResume")
-        if (PublisherPictureContent.isCurrentUser && sharedPref.getInt("posts") != 0) {
+        if (PublisherPictureContent.isCurrentUser && sharedPref.getString("posts")?.toInt() != 0) {
             PublisherPictureContent.loadRecentImages(sharedPref.getString("publisherId")!!, this)
         }
 
