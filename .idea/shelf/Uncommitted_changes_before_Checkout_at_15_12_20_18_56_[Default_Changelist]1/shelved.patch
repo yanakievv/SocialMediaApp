@@ -1,0 +1,88 @@
+Index: app/src/main/java/com/example/socialmediaappv2/data/firebase/StorageUtil.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.socialmediaappv2.data.firebase\n\nimport android.net.Uri\nimport android.util.Log\nimport com.google.firebase.auth.FirebaseAuth\nimport com.google.firebase.storage.FirebaseStorage\nimport com.google.firebase.storage.StorageReference\nimport java.io.File\nimport java.lang.NullPointerException\n\nobject StorageUtil {\n    private val storageInstance: FirebaseStorage by lazy { FirebaseStorage.getInstance() }\n\n    private val currentUserRef: StorageReference\n        get() = storageInstance.reference.child(FirebaseAuth.getInstance().uid ?: throw NullPointerException(\"FirebaseAuth.getInstance().uid returned null\"))\n\n    fun uploadPhoto(file: File) {\n        val ref = currentUserRef.child(\"pictures/${file.name}\")\n        ref.putFile(Uri.fromFile(file)).addOnFailureListener {\n            Log.e(\"StorageUtil\", \"Upload: ${it.message}\")\n        }\n    }\n\n    fun pathToReference(path: String) = storageInstance.getReference(path)\n}
+===================================================================
+--- app/src/main/java/com/example/socialmediaappv2/data/firebase/StorageUtil.kt	(revision 47b0d6e25d5cef97de6e678b28e0a467e6a71164)
++++ app/src/main/java/com/example/socialmediaappv2/data/firebase/StorageUtil.kt	(date 1607959258000)
+@@ -12,10 +12,10 @@
+     private val storageInstance: FirebaseStorage by lazy { FirebaseStorage.getInstance() }
+ 
+     private val currentUserRef: StorageReference
+-        get() = storageInstance.reference.child(FirebaseAuth.getInstance().uid ?: throw NullPointerException("FirebaseAuth.getInstance().uid returned null"))
++        get() = storageInstance.reference.child("pictures")
+ 
+     fun uploadPhoto(file: File) {
+-        val ref = currentUserRef.child("pictures/${file.name}")
++        val ref = currentUserRef.child(file.name)
+         ref.putFile(Uri.fromFile(file)).addOnFailureListener {
+             Log.e("StorageUtil", "Upload: ${it.message}")
+         }
+Index: app/src/main/java/com/example/socialmediaappv2/data/firebase/UserModel.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.socialmediaappv2.data.firebase\n\ndata class UserModel(\n    val name: String,\n    val birth: String,\n    val bio: String,\n    val profilePicturePath: String?,\n    val posts: String\n) {\n    constructor(): this(\"\", \"\", \"\", null, \"0\")\n}\n
+===================================================================
+--- app/src/main/java/com/example/socialmediaappv2/data/firebase/UserModel.kt	(revision 47b0d6e25d5cef97de6e678b28e0a467e6a71164)
++++ app/src/main/java/com/example/socialmediaappv2/data/firebase/UserModel.kt	(date 1607959941000)
+@@ -1,11 +1,12 @@
+ package com.example.socialmediaappv2.data.firebase
+ 
+ data class UserModel(
+-    val name: String,
+-    val birth: String,
+-    val bio: String,
+-    val profilePicturePath: String?,
+-    val posts: String
++    var name: String,
++    var birth: String,
++    var bio: String,
++    var profilePicturePath: String?,
++    var posts: String,
++    var paths: MutableList<String>
+ ) {
+-    constructor(): this("", "", "", null, "0")
++    constructor(): this("", "", "", null, "0", mutableListOf())
+ }
+Index: app/src/main/java/com/example/socialmediaappv2/data/firebase/FirestoreUtil.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.socialmediaappv2.data.firebase\n\nimport com.example.socialmediaappv2.data.roomdb.UserInfoModel\nimport com.google.firebase.auth.FirebaseAuth\nimport com.google.firebase.firestore.DocumentReference\nimport com.google.firebase.firestore.FirebaseFirestore\n\nobject FirestoreUtil {\n    private val firestoreInstance: FirebaseFirestore by lazy { FirebaseFirestore.getInstance()}\n    private val currentUserDoc: DocumentReference\n        get() = firestoreInstance.document(\"users/${FirebaseAuth.getInstance().uid\n            ?: throw NullPointerException(\"FirebaseAuth.getInstance().uid returned null\")}\")\n\n    fun initUserFirstTime(onComplete: () -> Unit) {\n        currentUserDoc.get().addOnSuccessListener {\n            if (!it.exists()) {\n                val firebaseCurrentUser = FirebaseAuth.getInstance().currentUser?: throw java.lang.NullPointerException(\"FirebaseAuth.getInstance().currentUser returned null\")\n                val newUser = UserModel(firebaseCurrentUser.displayName ?: \"\", \"Private\", \"\", null, \"0\")\n                currentUserDoc.set(newUser).addOnSuccessListener {\n                    onComplete()\n                }\n            }\n            else onComplete()\n        }\n    }\n\n    fun updateCurrentUser(user: UserModel) {\n        updateCurrentUser(user.name, user.birth, user.bio, user.profilePicturePath, user.posts)\n    }\n\n    fun updateCurrentUser(user: UserInfoModel, profilePicPath: String? = null) {\n        updateCurrentUser(user.displayName, user.birthDate, user.bio, profilePicPath, user.posts.toString())\n    }\n\n    fun updateCurrentUser(name: String = \"\", birth: String = \"\", bio: String = \"\", profilePicturePath: String? = null, posts: String = \"\") {\n        val fieldMap = mutableMapOf<String, Any>()\n\n        if (name.isNotBlank()) fieldMap[\"name\"] = name\n        if (birth.isNotBlank()) fieldMap[\"birth\"] = birth\n        if (bio.isNotBlank()) fieldMap[\"bio\"] = bio\n        if (profilePicturePath != null) fieldMap[\"profilePicturePath\"] = profilePicturePath\n        if (posts.isNotBlank()) fieldMap[\"posts\"] = posts\n        currentUserDoc.update(fieldMap)\n    }\n\n    fun getCurrentUser(onComplete: (UserModel) -> Unit) {\n        currentUserDoc.get().addOnSuccessListener {\n            it.toObject(UserModel::class.java)?.let { it1 -> onComplete(it1) }\n        }\n    }\n\n    fun getUID(): String {\n        return currentUserDoc.id\n    }\n}
+===================================================================
+--- app/src/main/java/com/example/socialmediaappv2/data/firebase/FirestoreUtil.kt	(revision 47b0d6e25d5cef97de6e678b28e0a467e6a71164)
++++ app/src/main/java/com/example/socialmediaappv2/data/firebase/FirestoreUtil.kt	(date 1607959258000)
+@@ -15,7 +15,7 @@
+         currentUserDoc.get().addOnSuccessListener {
+             if (!it.exists()) {
+                 val firebaseCurrentUser = FirebaseAuth.getInstance().currentUser?: throw java.lang.NullPointerException("FirebaseAuth.getInstance().currentUser returned null")
+-                val newUser = UserModel(firebaseCurrentUser.displayName ?: "", "Private", "", null, "0")
++                val newUser = UserModel(firebaseCurrentUser.displayName ?: "", "Private", "", null, "0", mutableListOf())
+                 currentUserDoc.set(newUser).addOnSuccessListener {
+                     onComplete()
+                 }
+@@ -49,6 +49,25 @@
+         }
+     }
+ 
++    fun getNextPostIndex(): Int {
++        var retValue = 0
++        getCurrentUser {
++            retValue =  it.posts.toInt()
++        }
++        return retValue
++    }
++
++    fun addPost(name: String) {
++        var user: UserModel? = null
++        getCurrentUser {
++            it.paths.add(name)
++            user = it
++        }
++        val fieldMap = mutableMapOf<String, Any>()
++        fieldMap["paths"] = user!!.paths.add(name)
++
++    }
++
+     fun getUID(): String {
+         return currentUserDoc.id
+     }
